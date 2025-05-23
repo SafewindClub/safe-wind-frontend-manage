@@ -1,5 +1,7 @@
 <template>
-  <router-view></router-view>   
+    <div>
+        活动管理
+    </div>
 </template>
 
 <script setup lang="ts">

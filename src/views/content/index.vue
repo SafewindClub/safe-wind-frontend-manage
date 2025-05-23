@@ -1,5 +1,7 @@
 <template>
-  <router-view></router-view>   
+    <div>
+        内容管理
+    </div>
 </template>
 
 <script setup lang="ts">

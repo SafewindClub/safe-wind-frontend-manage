@@ -10,6 +10,18 @@ export const useMenuStore = defineStore('menu', () => {
     const isFullscreen = ref(false)
     // 底部高度
     const footerHeight = ref(30)
+    // 头部高度
+    const headerHeight = ref(78)
+    // 当前激活的标签
+    const activeName = ref('dashboard')
+    // 标签导航栏
+    const tabs = ref([
+        {
+            title: '首页',
+            name: 'dashboard',
+            withClose: false
+        }
+    ])
     // 折叠
     const toggleCollapse = () => {
         isCollapse.value = !isCollapse.value
@@ -19,11 +31,30 @@ export const useMenuStore = defineStore('menu', () => {
     const toggleFullscreen = () => {
         isFullscreen.value = !isFullscreen.value
     }
+    // 添加标签导航栏
+    const addTab = (info: any) => {
+        const { name, title, withClose } = info
+        const isExist = tabs.value.some(tab => tab.name === name)
+
+        if (!isExist) {
+            tabs.value.push({
+                title: title || '未命名',
+                name: name,
+                withClose: withClose
+            })
+        }
+        activeName.value = name
+    }
+    
     return {
         asideWidth,
         isCollapse,
         isFullscreen,
         footerHeight,
+        headerHeight,
+        activeName,
+        tabs,
+        addTab,
         toggleCollapse,
         toggleFullscreen,
     }

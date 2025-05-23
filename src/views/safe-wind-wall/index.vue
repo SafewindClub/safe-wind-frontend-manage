@@ -1,5 +1,7 @@
 <template>
-  <router-view></router-view>   
+    <div>
+        海风墙
+    </div>
 </template>
 
 <script setup lang="ts">

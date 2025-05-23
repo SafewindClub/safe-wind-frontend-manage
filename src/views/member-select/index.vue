@@ -1,5 +1,7 @@
 <template>
-  <router-view></router-view>   
+    <div>
+        优秀社员评选
+    </div>
 </template>
 
 <script setup lang="ts">

@@ -8,7 +8,7 @@
             </template>
             <!--右边-->
             <template #default>
-                <tiny-container :footer-height="menuStore.footerHeight" pattern="classic">
+                <tiny-container :header-height="menuStore.headerHeight" :footer-height="menuStore.footerHeight" pattern="classic">
                     <!--头部-->
                     <template #header>
                         <div class="header-wrapper">
@@ -54,7 +54,6 @@ const menuStore = useMenuStore()
 }
 
 :deep(.tiny-container__header) {
-    height: 70px;
     padding: 0;
     background-color: #fff;
     box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
