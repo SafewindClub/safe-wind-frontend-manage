@@ -17,9 +17,9 @@
                     label-position="top"
                     @submit.prevent="handleLogin"
                 >
-                    <tiny-form-item prop="username" label="用户名">
+                    <tiny-form-item prop="userName" label="用户名">
                         <tiny-input 
-                            v-model="loginForm.username" 
+                            v-model="loginForm.userName" 
                             placeholder="请输入用户名(学号)"
                             :validate-event="true"
                         >
@@ -41,6 +41,25 @@
                             </template>
                         </tiny-input>
                     </tiny-form-item>
+                    <tiny-form-item prop="code" label="验证码">
+                        <div class="captcha-container">
+                            <tiny-input 
+                                v-model="loginForm.code" 
+                                placeholder="请输入验证码"
+                                :validate-event="true"
+                            >
+                                <template #prefix>
+                                    <KeyIcon />
+                                </template>
+                            </tiny-input>
+                            <img 
+                                :src="captchaUrl" 
+                                alt="验证码" 
+                                class="captcha-img"
+                                @click="refreshCaptcha"
+                            />
+                        </div>
+                    </tiny-form-item>
                     <div class="remember-row">
                         <tiny-checkbox v-model="loginForm.remember">记住密码</tiny-checkbox>
                     </div>
@@ -60,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { 
     Input as TinyInput,
     Button as TinyButton,
@@ -69,17 +88,26 @@ import {
     FormItem as TinyFormItem,
     Modal
 } from '@opentiny/vue'
-import { IconUser, IconLock } from '@opentiny/vue-icon'
-
+import { IconUser, IconLock, IconUnlock } from '@opentiny/vue-icon'
+import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
+import { login } from '@/api/user'
+import { getCaptcha } from '@/api/common'
 const UserIcon = IconUser()
 const LockIcon = IconLock()
+const KeyIcon = IconUnlock()
 
 const loginFormRef = ref()
+const captchaUrl = ref('')
+const userStore = useUserStore()
+const router = useRouter()
 
 const loginForm = reactive({
-    username: '',
+    userName: '',
     password: '',
-    remember: false
+    remember: false,
+    code: '',
+    uuid: ''
 })
 
 const validateUsername = (rule: any, value: string, callback: Function) => {
@@ -102,26 +130,56 @@ const validatePassword = (rule: any, value: string, callback: Function) => {
     }
 }
 
+const validateCaptcha = (rule: any, value: string, callback: Function) => {
+    if (!value) {
+        callback(new Error('请输入验证码'))
+    } else {
+        callback()
+    }
+}
+
 const rules = {
-    username: [
+    userName: [
         { validator: validateUsername, trigger: 'blur' }
     ],
     password: [
         { validator: validatePassword, trigger: 'blur' }
+    ],
+    code: [
+        { validator: validateCaptcha, trigger: 'blur' }
     ]
 }
+
+const refreshCaptcha = async () => {
+    const res = await getCaptcha()
+    loginForm.uuid = res.data.uuid
+    captchaUrl.value = `data:image/jpeg;base64,${res.data.img}`
+}
+
+onMounted(() => {
+    refreshCaptcha()
+})
 
 const handleLogin = async () => {
     try {
         const valid = await loginFormRef.value.validate()
         if (valid) {
-            // TODO: 实现登录逻辑
-            console.log('登录表单', loginForm)
+            const res = await login({
+                userName: loginForm.userName,
+                password: loginForm.password,
+                code: loginForm.code,
+                uuid: loginForm.uuid
+            }) 
+            console.log(res)
+            
+            userStore.setToken(res.data.token)
             Modal.message({ message: '登录成功', status: 'success' })
+            router.push('/admin/dashboard')
         }
-    } catch (error) {
-        console.error('表单验证失败', error)
-        Modal.message({ message: '请检查表单填写是否正确', status: 'error' })
+    } catch (error: any) {
+        console.error('登录失败', error)
+        refreshCaptcha()
+        loginForm.code = ''
     }
 }
 </script>
@@ -300,5 +358,32 @@ const handleLogin = async () => {
     .privacy-link {
         font-size: 12px;
     }
+}
+
+/* 添加验证码相关样式 */
+.captcha-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.captcha-img {
+    height: 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.captcha-img:hover {
+    opacity: 0.8;
+}
+
+/* 确保验证码输入框和图片在同一行 */
+:deep(.tiny-form-item) {
+    width: 100%;
+}
+
+:deep(.tiny-input) {
+    flex: 1;
 }
 </style>
