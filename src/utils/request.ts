@@ -31,12 +31,18 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     const res = response.data
-    console.log("信息",res)
     // 如果响应成功
-    if (response.status === 200 && res.code===200) {
+    if (response.status === 200 && res.code === 200) {
       return res
     }
-    
+    if (res.code === 401) {
+      console.log("error.response", res)
+      // 处理401未授权
+      const userStore = useUserStore()
+      userStore.forceLogout()
+      Modal.message({ message: '登录已过期，请重新登录', status: 'error' })
+      return Promise.reject(res)
+    }
     // 处理其他状态码
     handleError(res.status, res.message || '请求失败')
     return Promise.reject(new Error(res.message || '请求失败'))
@@ -45,16 +51,14 @@ request.interceptors.response.use(
     // 处理HTTP错误
     if (error.response) {
       const { status } = error.response
-      
       // 处理401未授权
       if (status === 401) {
         const userStore = useUserStore()
-        userStore.clearToken()
-        router.push('/login')
+        userStore.confirmLogout()
         Modal.message({ message: '登录已过期，请重新登录', status: 'error' })
         return Promise.reject(error)
       }
-      
+
       handleError(status, error.response.data?.message || '请求失败')
     } else {
       // 处理网络错误
@@ -66,7 +70,7 @@ request.interceptors.response.use(
 
 // 统一错误处理
 const handleError = (status: number, message: string) => {
-  console.log("统一处理",status,message)
+  console.log("统一处理", status, message)
   switch (status) {
     case 400:
       Modal.message({ message: '请求参数错误', status: 'error' })

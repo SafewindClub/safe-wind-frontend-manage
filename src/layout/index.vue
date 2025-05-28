@@ -8,7 +8,8 @@
             </template>
             <!--右边-->
             <template #default>
-                <tiny-container :header-height="menuStore.headerHeight" :footer-height="menuStore.footerHeight" pattern="classic">
+                <tiny-container :header-height="menuStore.headerHeight" :footer-height="menuStore.footerHeight"
+                    pattern="classic">
                     <!--头部-->
                     <template #header>
                         <div class="header-wrapper">
@@ -26,20 +27,32 @@
                     </template>
                 </tiny-container>
             </template>
+
         </tiny-container>
+
     </tiny-fullscreen>
+
+    <tiny-dialog-box v-model:visible="userStore.boxVisibility" title="退出确认" width="30%">
+        <span>确定要退出系统吗？</span>
+        <template #footer>
+            <tiny-button @click="userStore.boxVisibility = false" round>取 消</tiny-button>
+            <tiny-button type="primary" @click="userStore.confirmLogout" round>确 定</tiny-button>
+        </template>
+    </tiny-dialog-box>
 </template>
 
 <script setup lang="ts">
-import { TinyContainer, TinyFullscreen } from '@opentiny/vue'
+import { TinyContainer, TinyFullscreen, TinyDialogBox, TinyButton } from '@opentiny/vue'
 import AdminAside from './components/AdminAside.vue'
 import AdminHeader from './components/AdminHeader.vue'
 import AdminTagList from './components/AdminTagList.vue'
 import AdminMain from './components/AdminMain.vue'
 import AdminFooter from './components/AdminFooter.vue'
 import { useMenuStore } from '@/stores/menu'
+import { useUserStore } from '@/stores/user'
 
 const menuStore = useMenuStore()
+const userStore = useUserStore()
 
 </script>
 
@@ -77,7 +90,7 @@ const menuStore = useMenuStore()
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:deep(.tiny-container__aside.is-collapse) ~ .tiny-container__main {
+:deep(.tiny-container__aside.is-collapse)~.tiny-container__main {
     margin-left: 64px;
 }
 

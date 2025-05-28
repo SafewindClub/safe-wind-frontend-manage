@@ -18,7 +18,7 @@
           <template #dropdown>
             <tiny-dropdown-menu popper-class="my-class">
               <tiny-dropdown-item label="个人中心"></tiny-dropdown-item>
-              <tiny-dropdown-item label="退出"></tiny-dropdown-item>
+              <tiny-dropdown-item label="退出" @click="userStore.handleLogout"></tiny-dropdown-item>
               <tiny-dropdown-item label="设置"></tiny-dropdown-item>
             </tiny-dropdown-menu>
           </template>
@@ -37,8 +37,10 @@ const TinyIconDoubleLeft = iconDoubleLeft();
 const TinyIconFullscreenRight = iconFullscreenRight();
 const TinyIconMinscreenRight = iconMinscreenRight();
 import { useMenuStore } from '@/stores/menu'
+import { useUserStore } from '@/stores/user'
 
 const menuStore = useMenuStore()
+const userStore = useUserStore()
 
 // 标题
 const title = ref('海风');
