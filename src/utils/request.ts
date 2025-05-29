@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Modal } from '@opentiny/vue'
 import { useUserStore } from '@/stores/user'
-import router from '@/router'
+
 
 // 创建axios实例
 const request = axios.create({
