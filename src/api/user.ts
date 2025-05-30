@@ -1,18 +1,19 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 // 登录
-export const login = (data: any) => request.post('/api/user/login',
-    {
-        userName: data.userName,
-        password: data.password,
-        code: data.code,
-        uuid: data.uuid
-    }
-)
+export const login = (data: any) =>
+  request.post('/api/user/login', {
+    userName: data.userName,
+    password: data.password,
+    code: data.code,
+    uuid: data.uuid,
+  });
 
 // 测试
-export const test = () => request.get('/api/user/getLoginUser')
+export const test = () => request.get('/api/user/getLoginUser');
 
 // 退出
-export const logout = () => request.get('/api/user/logout')
+export const logout = () => request.get('/api/user/logout');
 
+// 获取用户信息
+export const getUserInfo = () => request.get('/api/user/getUserInfo');
