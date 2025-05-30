@@ -8,7 +8,7 @@
             </template>
             <!--右边-->
             <template #default>
-                <tiny-container :header-height="menuStore.headerHeight" :footer-height="menuStore.footerHeight"
+                <tiny-container :header-height="menuStore.headerHeight" :footer-height="0"
                     pattern="classic">
                     <!--头部-->
                     <template #header>
@@ -22,9 +22,9 @@
                         <AdminMain />
                     </template>
                     <!--底部-->
-                    <template #footer>
+                    <!-- <template #footer>
                         <AdminFooter />
-                    </template>
+                    </template> -->
                 </tiny-container>
             </template>
 
@@ -71,6 +71,8 @@ const userStore = useUserStore()
     background-color: #fff;
     box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: sticky;
+    z-index: 888; /*保证在顶部*/
 }
 
 :deep(.tiny-container__aside) {
@@ -86,8 +88,9 @@ const userStore = useUserStore()
 :deep(.tiny-container__main) {
     background-color: #f0f2f5;
     padding: 0;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: auto;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
 }
 
 :deep(.tiny-container__aside.is-collapse)~.tiny-container__main {
@@ -99,11 +102,11 @@ const userStore = useUserStore()
     flex-direction: column;
 }
 
-:deep(.tiny-container__footer) {
+/* :deep(.tiny-container__footer) {
     height: 20px;
     line-height: 20px;
     text-align: center;
     color: #666;
     background-color: #fff;
-}
+} */
 </style>

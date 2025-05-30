@@ -13,5 +13,6 @@
   box-sizing: border-box;
   overflow: auto;
   background-color: #f5f7fa;
+  padding: 5px;
 }
 </style>

@@ -9,7 +9,7 @@ export const useMenuStore = defineStore('menu', () => {
   // 是否全屏，默认false
   const isFullscreen = ref(false);
   // 底部高度
-  const footerHeight = ref(30);
+  const footerHeight = ref(0);
   // 头部高度
   const headerHeight = ref(78);
   // 当前激活的标签
