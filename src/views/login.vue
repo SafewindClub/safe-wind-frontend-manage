@@ -103,8 +103,8 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const loginForm = reactive({
-    userName: '',
-    password: '',
+    userName: '2220230000',
+    password: 'admin123',
     remember: false,
     code: '',
     uuid: ''

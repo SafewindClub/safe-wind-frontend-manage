@@ -105,6 +105,11 @@ const menuData = ref([
     name: "Apply",
     icon: "add",
   },
+  {
+    title: "菜单管理",
+    name: "Menu",
+    icon: "menu",
+  },
 ]);
 
 // 处理菜单选择
