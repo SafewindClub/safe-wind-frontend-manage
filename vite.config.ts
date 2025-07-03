@@ -18,8 +18,8 @@ export default defineConfig({
     host: true,    // 设置主机
     proxy: {
       '/api': {
-        // target: 'http://safe-wind.darven.cn', // 设置代理目标
-        target: 'http://localhost:9300', // 设置代理目标
+        target: 'http://safe-wind.darven.cn', // 设置代理目标
+        // target: 'http://localhost:9300', // 设置代理目标
         changeOrigin: true, // 是否改变源
         rewrite: (path) => path.replace(/^\/api/, '')  // 重写路径
       }
