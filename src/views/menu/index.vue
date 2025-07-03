@@ -566,6 +566,9 @@ const iconFormatter = (icon: string) => {
     display: flex;
     flex-direction: column;
     height: 100%;
+    background: #f4f8fc; /* 更浅的蓝色背景 */
+    padding: 24px 24px 0 24px;
+    box-sizing: border-box;
 }
 
 .menu-search {
@@ -573,16 +576,24 @@ const iconFormatter = (icon: string) => {
     justify-content: center;
     align-items: center;
     margin-top: 5px;
-    background-color: #fff;
-    height: 50px;
+    background-color: #e6f0ff; /* 浅蓝色背景 */
+    height: 56px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(64, 158, 255, 0.08);
+    padding: 0 24px;
+    border: 1.5px solid #b3d8ff;
 }
 
-.menu-search .tiny-input {
-    width: 200px;
-}
-
+.menu-search .tiny-input,
 .menu-search .tiny-base-select {
-    width: 200px;
+    width: 220px;
+    border-radius: 8px;
+    border: 1.5px solid #b3d8ff;
+    transition: border 0.2s;
+}
+.menu-search .tiny-input:focus,
+.menu-search .tiny-base-select:focus {
+    border-color: #409eff;
 }
 
 .menu-search .tiny-form--inline {
@@ -595,77 +606,170 @@ const iconFormatter = (icon: string) => {
     display: flex;
     align-items: center;
     margin-bottom: 0;
-    /* 去除底部间距 */
     height: 100%;
+    margin-right: 24px;
 }
-
+.menu-search .tiny-form-item:last-child {
+    margin-right: 0;
+}
 .menu-search .tiny-form-item__label {
     display: flex;
     align-items: center;
     height: 100%;
+    font-weight: 500;
+    color: #2366b8;
+}
+
+.menu-button {
+    margin: 20px 0 12px 0;
+    display: flex;
+    gap: 16px;
+}
+.menu-button .tiny-button {
+    border-radius: 24px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.08);
+    background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+    color: #fff;
+    border: none;
+    transition: background 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.menu-button .tiny-button:hover {
+    filter: brightness(1.12);
+    box-shadow: 0 4px 16px rgba(64, 158, 255, 0.16);
 }
 
 .menu-table {
-    border-top: 20px;
+    background-color: #fff;
+    padding: 24px 24px 12px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(64, 158, 255, 0.10);
+    flex: 1;
+    margin-bottom: 24px;
+}
+.menu-table .tiny-grid__header th {
+    font-weight: bold;
+    background: #e6f0ff;
+    color: #2366b8;
+    border-bottom: 2px solid #b3d8ff;
+}
+.menu-table .tiny-grid__row {
+    transition: background 0.2s;
+    height: 48px;
+}
+.menu-table .tiny-grid__row:hover {
+    background: #f0f7ff;
+}
+.menu-table .tiny-button {
+    border-radius: 18px;
+    font-size: 13px;
+    padding: 4px 18px;
+    font-weight: 500;
+    background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+    color: #fff;
+    border: none;
+    margin-right: 8px;
+    transition: filter 0.2s;
+}
+.menu-table .tiny-button[type="danger"] {
+    background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
+}
+.menu-table .tiny-button:last-child {
+    margin-right: 0;
+}
+.menu-table .tiny-button:hover {
+    filter: brightness(1.10);
 }
 
 .menu-form .form-row {
     display: flex;
-    gap: 24px;
+    gap: 28px;
+    margin-bottom: 20px;
 }
-
 .menu-form .form-col {
     flex: 1;
 }
-
 .menu-form .tiny-form-item {
     width: 100%;
+    margin-bottom: 0;
 }
-
-.menu-form .tiny-select {
+.menu-form .tiny-select,
+.menu-form .tiny-input {
     width: 100%;
+    border-radius: 8px;
+    border: 1.5px solid #b3d8ff;
+    transition: border 0.2s;
+}
+.menu-form .tiny-select:focus,
+.menu-form .tiny-input:focus {
+    border-color: #409eff;
 }
 
 .icon-input-wrapper {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
-
 .icon-select {
     flex: 1;
 }
-
 .icon-preview {
-    margin-left: 10px;
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    background-color: #f5f7fa;
-}
-
-/* 图标网格显示 */
-.tiny-select-dropdown__list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 10px;
-}
-
-.tiny-option {
-    border-radius: 4px;
-    transition: all 0.3s;
-}
-
-.tiny-option:hover {
+    border: 2px solid #b3d8ff;
+    border-radius: 8px;
     background-color: #f0f7ff;
 }
 
+.tiny-button + .tiny-button {
+    margin-left: 12px;
+}
+
+/* 图标选择器样式优化 */
+.tiny-select-dropdown__list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 14px;
+    background: #f4f8fc;
+}
+.tiny-option {
+    border-radius: 8px;
+    transition: all 0.3s;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tiny-option:hover {
+    background-color: #e6f0ff;
+}
 .tiny-select__selected-value svg {
     vertical-align: middle;
-    margin-right: 5px;
+    margin-right: 8px;
+}
+
+/* 弹窗表单按钮优化 */
+.menu-form .tiny-button {
+    border-radius: 20px;
+    min-width: 90px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+    color: #fff;
+    border: none;
+    transition: filter 0.2s;
+}
+.menu-form .tiny-button[type="primary"] {
+    background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+    border: none;
+}
+.menu-form .tiny-button[type="primary"]:hover {
+    filter: brightness(1.10);
+}
+.menu-form .tiny-button:not([type="primary"]):hover {
+    filter: brightness(1.08);
 }
 </style>

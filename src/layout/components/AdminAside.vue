@@ -110,6 +110,11 @@ const menuData = ref([
     name: "Menu",
     icon: "menu",
   },
+  {
+    title: "角色管理",
+    name: "Role",
+    icon: "relo",
+  },
 ]);
 
 // 处理菜单选择
