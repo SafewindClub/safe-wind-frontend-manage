@@ -31,9 +31,9 @@
         <!-- 表格区 -->
         <div class="menu-table">
             <tiny-grid :data="menuTree" :tree-config="{ children: 'menuVOList', expandAll: false }" align="center">
-                <tiny-grid-column tree-node width="60" label=" "></tiny-grid-column>
-                <tiny-grid-column field="menuName" title="菜单名称" width="100"></tiny-grid-column>
-                <tiny-grid-column field="icon" title="图标" width="80">
+                <tiny-grid-column tree-node width="4%" label=" "></tiny-grid-column>
+                <tiny-grid-column field="menuName" title="菜单名称" width="12%"></tiny-grid-column>
+                <tiny-grid-column field="icon" title="图标" width="6%">
                     <template #default="data">
                         <span v-if="data.row.icon && data.row.icon !== '#'">
                             <svg-icon :icon="data.row.icon" style="width: 24px; height: 24px;" />
@@ -41,20 +41,20 @@
                         <span v-else>-</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column field="orderNum" title="排序" width="80"></tiny-grid-column>
-                <tiny-grid-column field="perms" title="权限标识" width="185">
+                <tiny-grid-column field="orderNum" title="排序" width="6%"></tiny-grid-column>
+                <tiny-grid-column field="perms" title="权限标识" width="15%">
                     <template #default="data">
                         <span v-if="data.row.perms">{{ data.row.perms }}</span>
                         <span v-else>-</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column field="component" title="组件路径" width="185">
+                <tiny-grid-column field="component" title="组件路径" width="15%">
                     <template #default="data">
                         <span v-if="data.row.component">{{ data.row.component }}</span>
                         <span v-else>-</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column field="menuType" title="菜单类型" width="100">
+                <tiny-grid-column field="menuType" title="菜单类型" width="8%">
                     <template #default="data">
                         <span v-if="data.row.menuType === 'M'">目录</span>
                         <span v-else-if="data.row.menuType === 'C'">菜单</span>
@@ -62,21 +62,21 @@
                         <span v-else>{{ data.row.menuType }}</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column field="status" title="状态" width="100">
+                <tiny-grid-column field="status" title="状态" width="6%">
                     <template #default="data">
                         <span v-if="data.row.status === '0'" style="color: #67c23a;">正常</span>
                         <span v-else-if="data.row.status === '1'" style="color: #f56c6c;">停用</span>
                         <span v-else>{{ data.row.status }}</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column field="visible" title="显示状态" width="100">
+                <tiny-grid-column field="visible" title="显示状态" width="8%">
                     <template #default="data">
                         <span v-if="data.row.visible === '0'" style="color: #67c23a;">显示</span>
                         <span v-else-if="data.row.visible === '1'" style="color: #f56c6c;">隐藏</span>
                         <span v-else>{{ data.row.visible }}</span>
                     </template>
                 </tiny-grid-column>
-                <tiny-grid-column title="操作" width="200">
+                <tiny-grid-column title="操作" width="20%">
                     <template #default="data">
                         <tiny-button type="primary" size="small" @click="editMenu(data.row)">编辑</tiny-button>
                         <tiny-button type="danger" size="small" @click="deleteMenu(data.row)">删除</tiny-button>
@@ -373,7 +373,7 @@ const editMenu = (menuData: any) => {
         const findMenuItem = (items: any[]): any => {
             for (const item of items) {
                 if (item.value === formData.value.parentId) {
-                    return item.value 
+                    return item.value
                 }
                 if (item.children && item.children.length) {
                     const found = findMenuItem(item.children)
@@ -566,7 +566,8 @@ const iconFormatter = (icon: string) => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #f4f8fc; /* 更浅的蓝色背景 */
+    background: #f4f8fc;
+    /* 更浅的蓝色背景 */
     padding: 24px 24px 0 24px;
     box-sizing: border-box;
 }
@@ -576,7 +577,8 @@ const iconFormatter = (icon: string) => {
     justify-content: center;
     align-items: center;
     margin-top: 5px;
-    background-color: #e6f0ff; /* 浅蓝色背景 */
+    background-color: #e6f0ff;
+    /* 浅蓝色背景 */
     height: 56px;
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(64, 158, 255, 0.08);
@@ -591,6 +593,7 @@ const iconFormatter = (icon: string) => {
     border: 1.5px solid #b3d8ff;
     transition: border 0.2s;
 }
+
 .menu-search .tiny-input:focus,
 .menu-search .tiny-base-select:focus {
     border-color: #409eff;
@@ -609,9 +612,11 @@ const iconFormatter = (icon: string) => {
     height: 100%;
     margin-right: 24px;
 }
+
 .menu-search .tiny-form-item:last-child {
     margin-right: 0;
 }
+
 .menu-search .tiny-form-item__label {
     display: flex;
     align-items: center;
@@ -625,6 +630,7 @@ const iconFormatter = (icon: string) => {
     display: flex;
     gap: 16px;
 }
+
 .menu-button .tiny-button {
     border-radius: 24px;
     font-weight: 600;
@@ -634,6 +640,7 @@ const iconFormatter = (icon: string) => {
     border: none;
     transition: background 0.2s, box-shadow 0.2s, filter 0.2s;
 }
+
 .menu-button .tiny-button:hover {
     filter: brightness(1.12);
     box-shadow: 0 4px 16px rgba(64, 158, 255, 0.16);
@@ -647,19 +654,23 @@ const iconFormatter = (icon: string) => {
     flex: 1;
     margin-bottom: 24px;
 }
+
 .menu-table .tiny-grid__header th {
     font-weight: bold;
     background: #e6f0ff;
     color: #2366b8;
     border-bottom: 2px solid #b3d8ff;
 }
+
 .menu-table .tiny-grid__row {
     transition: background 0.2s;
     height: 48px;
 }
+
 .menu-table .tiny-grid__row:hover {
     background: #f0f7ff;
 }
+
 .menu-table .tiny-button {
     border-radius: 18px;
     font-size: 13px;
@@ -671,12 +682,15 @@ const iconFormatter = (icon: string) => {
     margin-right: 8px;
     transition: filter 0.2s;
 }
+
 .menu-table .tiny-button[type="danger"] {
     background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
 }
+
 .menu-table .tiny-button:last-child {
     margin-right: 0;
 }
+
 .menu-table .tiny-button:hover {
     filter: brightness(1.10);
 }
@@ -686,13 +700,16 @@ const iconFormatter = (icon: string) => {
     gap: 28px;
     margin-bottom: 20px;
 }
+
 .menu-form .form-col {
     flex: 1;
 }
+
 .menu-form .tiny-form-item {
     width: 100%;
     margin-bottom: 0;
 }
+
 .menu-form .tiny-select,
 .menu-form .tiny-input {
     width: 100%;
@@ -700,6 +717,7 @@ const iconFormatter = (icon: string) => {
     border: 1.5px solid #b3d8ff;
     transition: border 0.2s;
 }
+
 .menu-form .tiny-select:focus,
 .menu-form .tiny-input:focus {
     border-color: #409eff;
@@ -710,9 +728,11 @@ const iconFormatter = (icon: string) => {
     align-items: center;
     gap: 12px;
 }
+
 .icon-select {
     flex: 1;
 }
+
 .icon-preview {
     width: 38px;
     height: 38px;
@@ -724,7 +744,7 @@ const iconFormatter = (icon: string) => {
     background-color: #f0f7ff;
 }
 
-.tiny-button + .tiny-button {
+.tiny-button+.tiny-button {
     margin-left: 12px;
 }
 
@@ -736,6 +756,7 @@ const iconFormatter = (icon: string) => {
     padding: 14px;
     background: #f4f8fc;
 }
+
 .tiny-option {
     border-radius: 8px;
     transition: all 0.3s;
@@ -744,9 +765,11 @@ const iconFormatter = (icon: string) => {
     align-items: center;
     gap: 8px;
 }
+
 .tiny-option:hover {
     background-color: #e6f0ff;
 }
+
 .tiny-select__selected-value svg {
     vertical-align: middle;
     margin-right: 8px;
@@ -762,13 +785,16 @@ const iconFormatter = (icon: string) => {
     border: none;
     transition: filter 0.2s;
 }
+
 .menu-form .tiny-button[type="primary"] {
     background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
     border: none;
 }
+
 .menu-form .tiny-button[type="primary"]:hover {
     filter: brightness(1.10);
 }
+
 .menu-form .tiny-button:not([type="primary"]):hover {
     filter: brightness(1.08);
 }

@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { Modal } from '@opentiny/vue'
 import { useUserStore } from '@/stores/user'
-
+// 引入加载状态
+import { loadingStore } from '@/stores/loading'
 
 // 创建axios实例
 const request = axios.create({
@@ -20,9 +21,12 @@ request.interceptors.request.use(
     if (userStore.token) {
       config.headers['Authorization'] = `Bearer ${userStore.token}`
     }
+    // 显示加载
+    loadingStore.show()
     return config
   },
   (error) => {
+    loadingStore.hide()
     return Promise.reject(error)
   }
 )
@@ -31,10 +35,13 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     const res = response.data
+    // 隐藏加载
+    loadingStore.hide()
     // 如果响应成功
     if (response.status === 200 && res.code === 200) {
       return res
     }
+    
     if (res.code === 401) {
       console.log("error.response", res)
       // 处理401未授权
@@ -48,6 +55,8 @@ request.interceptors.response.use(
     return Promise.reject(new Error(res.message || '请求失败'))
   },
   (error) => {
+    // 隐藏加载
+    loadingStore.hide()
     // 处理HTTP错误
     if (error.response) {
       const { status } = error.response

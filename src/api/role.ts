@@ -2,7 +2,6 @@ import request from '@/utils/request';
 import type {
   RoleQuery,
   Role,
-  RolePageResult,
   RoleApiResponse,
   CommonApiResponse,
 } from '@/types/roletype';
@@ -25,4 +24,29 @@ export const updateRoleApi = (data: Role): Promise<CommonApiResponse> => {
 // 删除角色
 export const deleteRoleApi = (roleId: number): Promise<CommonApiResponse> => {
   return request.post('/api/role/deleteRole', { roleId });
+};
+
+// 分配用户
+export const assignUserApi = (data: any): Promise<CommonApiResponse> => {
+  return request.post('/api/role/distributionRole', data);
+};
+
+// 分配单个用户
+export const assignSingleUserApi = (data: any): Promise<CommonApiResponse> => {
+  return request.post('/api/role/distributionSingleRole', data);
+};
+
+// 查询未分配用户
+export const queryUnassignedUserApi = (data: any): Promise<CommonApiResponse> => {
+  return request.post('/api/role/queryUnDistributionRole', data);
+};
+
+// 查询已分配用户
+export const queryAssignedUserApi = (data:any): Promise<CommonApiResponse> => {
+  return request.post('/api/role/queryDistributionRole', data);
+};
+
+// 批量取消分配用户
+export const batchCancelAssignUserApi = (data: any): Promise<CommonApiResponse> => {
+  return request.post('/api/role/batchCancelAuthorizeUser', data);
 };

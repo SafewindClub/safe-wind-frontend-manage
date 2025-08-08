@@ -4,36 +4,17 @@
     <!-- 搜索区 -->
     <div class="role-search">
       <!-- 搜索表单，包含角色名、角色标识、状态等条件 -->
-      <tiny-form
-        label-width="100px"
-        v-model="searchForm"
-        :inline="true"
-        style="display: flex; align-items: center"
-        class="role-search-form"
-      >
+      <tiny-form label-width="100px" v-model="searchForm" :inline="true" style="display: flex; align-items: center"
+        class="role-search-form">
         <tiny-form-item label="角色名称" prop="roleName">
-          <tiny-input
-            v-model="searchForm.roleName"
-            placeholder="角色名称"
-          ></tiny-input>
+          <tiny-input v-model="searchForm.roleName" placeholder="角色名称"></tiny-input>
         </tiny-form-item>
         <tiny-form-item label="权限标识" prop="roleKey">
-          <tiny-input
-            v-model="searchForm.roleKey"
-            placeholder="权限标识"
-          ></tiny-input>
+          <tiny-input v-model="searchForm.roleKey" placeholder="权限标识"></tiny-input>
         </tiny-form-item>
         <tiny-form-item label="状态" prop="status">
-          <tiny-base-select
-            v-model="searchForm.status"
-            placeholder="请选择状态"
-          >
-            <tiny-option
-              v-for="item in statusOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <tiny-base-select v-model="searchForm.status" placeholder="请选择状态">
+            <tiny-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </tiny-base-select>
         </tiny-form-item>
         <tiny-form-item>
@@ -46,19 +27,12 @@
 
     <!-- 操作区：新增按钮 -->
     <div class="role-button">
-      <tiny-button type="success" @click="addRole" round size="small"
-        >新增</tiny-button
-      >
+      <tiny-button type="success" @click="addRole" round size="small">新增</tiny-button>
     </div>
 
     <!-- 表格区：角色列表展示 -->
     <div class="role-table">
-      <tiny-grid
-        ref="roleGrid"
-        :data="tableData"
-        align="center"
-        overflow="hidden"
-      >
+      <tiny-grid ref="roleGrid" :data="tableData" align="center" overflow="hidden">
         <tiny-grid-column field="roleId" title="用户编号" width="100px">
         </tiny-grid-column>
         <tiny-grid-column field="roleName" title="角色名称" width="180px">
@@ -67,12 +41,7 @@
         </tiny-grid-column>
         <tiny-grid-column field="roleSort" title="显示顺序" width="100px">
         </tiny-grid-column>
-        <tiny-grid-column
-          field="status"
-          title="状态"
-          slot="status"
-          width="100px"
-        >
+        <tiny-grid-column field="status" title="状态" slot="status" width="100px">
           <template #default="{ row }">
             <span v-if="row.status === '0'">正常</span>
             <span v-else-if="row.status === '1'">停用</span>
@@ -84,117 +53,68 @@
         <!-- 操作列自定义渲染：编辑、删除按钮 -->
         <tiny-grid-column title="操作">
           <template #default="scope">
-            <tiny-button
-              type="primary"
-              size="small"
-              round
-              @click="editRole(scope.row)"
-            >
+            <tiny-button type="primary" size="small" round @click="editRole(scope.row)">
               编辑
             </tiny-button>
-            <tiny-button
-              type="danger"
-              size="small"
-              round
-              @click="deleteRole(scope.row)"
-            >
+            <tiny-button type="danger" size="small" round @click="deleteRole(scope.row)">
               删除
             </tiny-button>
+            <tiny-dropdown title="更多" size="small" round>
+              <template #dropdown>
+                <tiny-dropdown-menu>
+                  <tiny-dropdown-item
+                    label="分配用户"
+                    @click="assignUsers(scope.row)"
+                  ></tiny-dropdown-item>
+                </tiny-dropdown-menu>
+              </template>
+            </tiny-dropdown>
           </template>
         </tiny-grid-column>
       </tiny-grid>
 
       <!-- 独立的分页器组件 -->
-      <tiny-pager
-        :current-page="pagerConfig.currentPage"
-        :page-size="pagerConfig.pageSize"
-        :total="pagerConfig.total"
-        :page-sizes="[5, 10, 20]"
-        @current-change="handleCurrentChange"
-        @size-change="handleSizeChange"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="role-pager"
-      ></tiny-pager>
+      <tiny-pager :current-page="pagerConfig.currentPage" :page-size="pagerConfig.pageSize" :total="pagerConfig.total"
+        :page-sizes="[5, 10, 20]" @current-change="handleCurrentChange" @size-change="handleSizeChange"
+        layout="total, sizes, prev, pager, next, jumper" class="role-pager"></tiny-pager>
     </div>
 
     <!-- 新增/编辑弹窗表单 -->
-    <tiny-dialog-box
-      v-model:visible="dialogVisible"
-      :title="dialogTitle"
-      width="500px"
-    >
-      <tiny-form
-        ref="formRef"
-        :model="formData"
-        :rules="rules"
-        label-width="110px"
-        class="role-form"
-      >
+    <tiny-dialog-box v-model:visible="dialogVisible" :title="dialogTitle" width="500px">
+      <tiny-form ref="formRef" :model="formData" :rules="rules" label-width="110px" class="role-form">
         <tiny-form-item label="角色名称" prop="roleName">
-          <tiny-input
-            v-model="formData.roleName"
-            placeholder="请输入角色名称"
-          ></tiny-input>
+          <tiny-input v-model="formData.roleName" placeholder="请输入角色名称"></tiny-input>
         </tiny-form-item>
         <tiny-form-item label="角色标识" prop="roleKey">
-          <tiny-input
-            v-model="formData.roleKey"
-            placeholder="请输入角色标识"
-          ></tiny-input>
+          <tiny-input v-model="formData.roleKey" placeholder="请输入角色标识"></tiny-input>
         </tiny-form-item>
         <tiny-form-item label="排序" prop="roleSort">
-          <tiny-input
-            v-model="formData.roleSort"
-            type="number"
-            placeholder="请输入排序"
-          ></tiny-input>
+          <tiny-input v-model="formData.roleSort" type="number" placeholder="请输入排序"></tiny-input>
         </tiny-form-item>
         <tiny-form-item label="数据范围" prop="dataScope">
-          <tiny-base-select
-            v-model="formData.dataScope"
-            placeholder="请选择数据范围"
-          >
-            <tiny-option
-              v-for="item in dataScopeOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <tiny-base-select v-model="formData.dataScope" placeholder="请选择数据范围">
+            <tiny-option v-for="item in dataScopeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </tiny-base-select>
         </tiny-form-item>
         <!-- 菜单权限选择 -->
         <tiny-form-item label="菜单权限" prop="menuIds" required>
-          <tiny-tree
-            :data="menuTree"
-            show-checkbox
-            node-key="menuId"
-            :default-checked-keys="formData.menuIds"
-            @check="handleMenuCheck"
-            style="
+          <tiny-tree :data="menuTree" show-checkbox node-key="menuId" :default-checked-keys="formData.menuIds"
+            @check="handleMenuCheck" style="
               max-height: 300px;
               overflow: auto;
               border: 1px solid #b3d8ff;
               border-radius: 8px;
               padding: 8px;
-            "
-          />
+            " />
         </tiny-form-item>
         <tiny-form-item label="状态" prop="status">
           <tiny-base-select v-model="formData.status" placeholder="请选择状态">
-            <tiny-option
-              v-for="item in statusOptions.slice(1)"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+            <tiny-option v-for="item in statusOptions.slice(1)" :key="item.value" :label="item.label"
+              :value="item.value" />
           </tiny-base-select>
         </tiny-form-item>
         <tiny-form-item label="备注" prop="remark">
-          <tiny-input
-            v-model="formData.remark"
-            type="textarea"
-            placeholder="请输入备注"
-          ></tiny-input>
+          <tiny-input v-model="formData.remark" type="textarea" placeholder="请输入备注"></tiny-input>
         </tiny-form-item>
         <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
           <tiny-button @click="closeDialog">取消</tiny-button>
@@ -224,6 +144,9 @@ import {
   TinyGridColumn,
   TinyTree,
   TinyPager,
+  TinyDropdown,
+  TinyDropdownMenu,
+  TinyDropdownItem,
 } from "@opentiny/vue";
 // 引入角色相关API
 import {
@@ -235,6 +158,7 @@ import {
 // 引入类型定义
 import type { Role, RoleQuery } from "@/types/roletype";
 import { getMenuTreeApi } from "@/api/menu";
+import router from "@/router";
 
 // 搜索表单数据，包含分页和筛选条件
 const searchForm = ref<RoleQuery>({
@@ -347,11 +271,11 @@ const getRoleList = async () => {
       pagerConfig.value.total = res.data?.totalSize || 0;
 
       // 调试输出
-      console.log("【调试】接口返回总条数:", res.data?.totalSize);
-      console.log("【调试】当前页码:", pagerConfig.value.currentPage);
-      console.log("【调试】每页条数:", pagerConfig.value.pageSize);
-      console.log("【调试】当前表格数据条数:", tableData.value.length);
-      console.log("res:", res);
+      // console.log("【调试】接口返回总条数:", res.data?.totalSize);
+      // console.log("【调试】当前页码:", pagerConfig.value.currentPage);
+      // console.log("【调试】每页条数:", pagerConfig.value.pageSize);
+      // console.log("【调试】当前表格数据条数:", tableData.value.length);
+      // console.log("res:", res);
 
       // 如果当前页没有数据且不是第一页，则跳转到上一页
       if (tableData.value.length === 0 && pagerConfig.value.currentPage > 1) {
@@ -583,6 +507,25 @@ onMounted(() => {
 const closeDialog = () => {
   dialogVisible.value = false;
 };
+
+// 分配用户功能,跳转到分配用户页面
+const assignUsers = (row: Role) => {
+  router.push({
+    name:'DistributionRole',
+    query:{
+      roleId:row.roleId
+    }
+  })
+};
+
+// 数据权限功能
+const dataPermissions = (row: Role) => {
+  TinyNotify({
+    type: "info",
+    message: `为角色 "${row.roleName}" 设置数据权限功能开发中...`,
+    position: "top-right",
+  });
+};
 </script>
 
 <style scoped>
@@ -591,10 +534,12 @@ const closeDialog = () => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f4f8fc; /* 更浅的蓝色背景 */
+  background: #f4f8fc;
+  /* 更浅的蓝色背景 */
   padding: 24px 24px 0 24px;
   box-sizing: border-box;
-  overflow-y: hidden; /* 禁用滚动条 */
+  overflow-y: hidden;
+  /* 禁用滚动条 */
 }
 
 /* 搜索区样式 */
@@ -603,7 +548,8 @@ const closeDialog = () => {
   justify-content: center;
   align-items: center;
   margin-top: 5px;
-  background-color: #e6f0ff; /* 浅蓝色背景 */
+  background-color: #e6f0ff;
+  /* 浅蓝色背景 */
   height: 56px;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(64, 158, 255, 0.08);
@@ -619,6 +565,7 @@ const closeDialog = () => {
   border: 1.5px solid #b3d8ff;
   transition: border 0.2s;
 }
+
 .role-search .tiny-input:focus,
 .role-search .tiny-base-select:focus {
   border-color: #409eff;
@@ -637,9 +584,11 @@ const closeDialog = () => {
   height: 100%;
   margin-right: 24px;
 }
+
 .role-search .tiny-form-item:last-child {
   margin-right: 0;
 }
+
 .role-search .tiny-form-item__label {
   display: flex;
   align-items: center;
@@ -654,6 +603,7 @@ const closeDialog = () => {
   display: flex;
   gap: 16px;
 }
+
 .role-button .tiny-button {
   border-radius: 24px;
   font-weight: 600;
@@ -663,6 +613,7 @@ const closeDialog = () => {
   border: none;
   transition: background 0.2s, box-shadow 0.2s, filter 0.2s;
 }
+
 .role-button .tiny-button:hover {
   filter: brightness(1.12);
   box-shadow: 0 4px 16px rgba(64, 158, 255, 0.16);
@@ -677,19 +628,23 @@ const closeDialog = () => {
   flex: 1;
   margin-bottom: 24px;
 }
+
 .role-table .tiny-grid__header th {
   font-weight: bold;
   background: #e6f0ff;
   color: #2366b8;
   border-bottom: 2px solid #b3d8ff;
 }
+
 .role-table .tiny-grid__row {
   transition: background 0.2s;
   height: 48px;
 }
+
 .role-table .tiny-grid__row:hover {
   background: #f0f7ff;
 }
+
 .role-table .tiny-button {
   border-radius: 18px;
   font-size: 13px;
@@ -701,13 +656,37 @@ const closeDialog = () => {
   margin-right: 8px;
   transition: filter 0.2s;
 }
+
 .role-table .tiny-button[type="danger"] {
   background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
 }
+
 .role-table .tiny-button:last-child {
   margin-right: 0;
 }
+
 .role-table .tiny-button:hover {
+  filter: brightness(1.1);
+}
+
+/* 更多按钮样式，与编辑删除按钮保持一致 */
+.role-table .tiny-dropdown {
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.role-table .tiny-dropdown .tiny-button {
+  border-radius: 18px;
+  font-size: 13px;
+  padding: 4px 18px;
+  font-weight: 500;
+  background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+  color: #fff;
+  border: none;
+  transition: filter 0.2s;
+}
+
+.role-table .tiny-dropdown .tiny-button:hover {
   filter: brightness(1.1);
 }
 
@@ -716,9 +695,11 @@ const closeDialog = () => {
   width: 100%;
   margin-bottom: 16px;
 }
+
 .role-form .tiny-form-item:last-of-type {
   margin-bottom: 0;
 }
+
 .role-form .tiny-select,
 .role-form .tiny-input,
 .role-form .tiny-base-select {
@@ -727,13 +708,14 @@ const closeDialog = () => {
   border: 1.5px solid #b3d8ff;
   transition: border 0.2s;
 }
+
 .role-form .tiny-select:focus,
 .role-form .tiny-input:focus,
 .role-form .tiny-base-select:focus {
   border-color: #409eff;
 }
 
-.tiny-button + .tiny-button {
+.tiny-button+.tiny-button {
   margin-left: 12px;
 }
 
@@ -747,13 +729,16 @@ const closeDialog = () => {
   border: none;
   transition: filter 0.2s;
 }
+
 .role-form .tiny-button[type="primary"] {
   background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
   border: none;
 }
+
 .role-form .tiny-button[type="primary"]:hover {
   filter: brightness(1.1);
 }
+
 .role-form .tiny-button:not([type="primary"]):hover {
   filter: brightness(1.08);
 }

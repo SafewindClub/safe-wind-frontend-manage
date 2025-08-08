@@ -75,6 +75,7 @@
                 </tiny-form>
             </div>
         </div>
+        
     </div>
 </template>
 
@@ -86,7 +87,8 @@ import {
     Checkbox as TinyCheckbox,
     Form as TinyForm,
     FormItem as TinyFormItem,
-    Modal
+    Modal,
+    TinyLoading 
 } from '@opentiny/vue'
 import { IconUser, IconLock, IconUnlock } from '@opentiny/vue-icon'
 import { useUserStore } from '@/stores/user'
@@ -109,6 +111,37 @@ const loginForm = reactive({
     code: '',
     uuid: ''
 })
+
+// // 加载状态
+// const isLoading = ref(false)
+// const loadingInstance = ref<any>(null)
+// // 显示加载
+// const showLoading = () => {
+//     isLoading.value = true
+//     isLoading.value = true
+//     // 修复类型错误：添加空值检查
+//     const loadingContainer = document.getElementById('login-loading-container')
+//     if (loadingContainer) {
+//         loadingInstance.value = TinyLoading.service({
+//             target: loadingContainer,
+//             text: '登录中...'
+//         })
+//     } else {
+//         // 如果没有找到容器，使用默认的全屏加载
+//         loadingInstance.value = TinyLoading.service({
+//             text: '登录中...',
+//         })
+//     }
+// }
+
+// // 隐藏加载
+// const hideLoading = () => {
+//     isLoading.value = false
+//     if (loadingInstance.value) {
+//         loadingInstance.value.close()
+//         loadingInstance.value = null
+//     }
+// }
 
 const validateUsername = (rule: any, value: string, callback: Function) => {
     if (!value) {
@@ -160,7 +193,9 @@ onMounted(() => {
     refreshCaptcha()
 })
 
+// 登录
 const handleLogin = async () => {
+    // showLoading()
     try {
         const valid = await loginFormRef.value.validate()
         if (valid) {
@@ -179,6 +214,8 @@ const handleLogin = async () => {
         console.error('登录失败', error)
         refreshCaptcha()
         loginForm.code = ''
+    } finally {
+        // hideLoading()
     }
 }
 </script>

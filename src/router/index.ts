@@ -73,6 +73,11 @@ const router = createRouter({
           name: "Role",
           component: () => import("@/views/role/index.vue"),
         },
+        {
+          path: "distributionRole",
+          name: "DistributionRole",
+          component: () => import("@/views/role/DistributionRole.vue"),
+        },
       ],
     },
     {

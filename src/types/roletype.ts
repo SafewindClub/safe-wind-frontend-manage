@@ -46,3 +46,4 @@ export interface CommonApiResponse {
   data: null;
   success: boolean;
 }
+
