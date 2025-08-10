@@ -20,7 +20,7 @@
 
       <div class="header-right-item">
         <tiny-user-head
-          v-model="userInfo.avatar"
+          v-model="userInfo.userInfo.avatar"
           type="image"
           min
           round
@@ -94,20 +94,28 @@ const goToUser = async () => {
   }
 };
 
-const userInfo = ref({
+const userInfo = ref<UserInfo>({
   userId: -1,
   studentId: '',
   email: '',
-  nickname: '',
-  avatar: '',
-  grade: '',
-  speciality: '',
-  faculty: '',
-  userInfoName: '',
-  sex: 1,
-  className: '',
-  roleName: '',
-  deptName: '',
+  userInfo: {
+    nickname: '',
+    avatar: '',
+    grade: '',
+    speciality: '',
+    faculty: '',
+    name: '',
+    sex: 1,
+    className: '',
+  },
+  roleKeys: [],
+  roles: [],
+  dept: {
+    deptId: -1,
+    name: '',
+  },
+  permissions: [],
+  isAdmin: false,
 });
 
 onMounted(async () => {
@@ -119,16 +127,16 @@ onMounted(async () => {
     console.log('从本地存储获取数据');
 
     userInfo.value = savedUserInfo;
-    avatar.value = savedUserInfo.avatar || defaultAvatar;
-    title.value = savedUserInfo.userInfoName || '海风';
+    avatar.value = savedUserInfo.userInfo.avatar || defaultAvatar;
+    title.value = savedUserInfo.userInfo.name || '海风';
   } else {
     // 本地没有数据，请求API
     const res = await getUserInfo();
     if (res) {
-      console.log('从API获取数据');
+      console.log('从API获取数据',res);
       userInfo.value = res.data;
-      title.value = userInfo.value.userInfoName || '海风';
-      avatar.value = userInfo.value.avatar || defaultAvatar;
+      title.value = userInfo.value.userInfo.name || '海风';
+      avatar.value = userInfo.value.userInfo.avatar || defaultAvatar;
 
       // 将API数据存入本地存储
       storage.set('userInfo', userInfo.value);

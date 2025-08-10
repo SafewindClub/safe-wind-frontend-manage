@@ -5,25 +5,25 @@
         <div class="avatar-container">
           <img
             class="avatar"
-            :src="userInfo.avatar || defaultAvatar"
+            :src="userInfo.userInfo.avatar || defaultAvatar"
             alt="头像"
           />
         </div>
-        <h2 class="username">{{ userInfo.nickname }}</h2>
-        <p class="user-role">{{ userInfo.roleName }}</p>
+        <h2 class="username">{{ userInfo.userInfo.nickname }}</h2>
+        <p class="user-role">{{ userInfo.roles.map(role => role.roleName).join(', ') }}</p>
       </div>
       <div class="info-section">
         <h3 class="section-title">基本信息</h3>
         <div class="info-grid">
           <div class="info-item"><span class="label">ID：</span><span class="value">{{ userInfo.userId }}</span></div>
-          <div class="info-item"><span class="label">年级：</span><span class="value">{{ userInfo.grade }}</span></div>
-          <div class="info-item"><span class="label">性别：</span><span class="value">{{ userInfo.sex === 1 ? '男' : '女' }}</span></div>
+          <div class="info-item"><span class="label">年级：</span><span class="value">{{ userInfo.userInfo.grade }}</span></div>
+          <div class="info-item"><span class="label">性别：</span><span class="value">{{ userInfo.userInfo.sex === 1 ? '男' : '女' }}</span></div>
           <div class="info-item"><span class="label">学号：</span><span class="value">{{ userInfo.studentId }}</span></div>
           <div class="info-item"><span class="label">邮箱：</span><span class="value">{{ userInfo.email }}</span></div>
-          <div class="info-item"><span class="label">部门：</span><span class="value">{{ userInfo.deptName }}</span></div>
-          <div class="info-item"><span class="label">学院：</span><span class="value">{{ userInfo.faculty }}</span></div>
-          <div class="info-item"><span class="label">专业：</span><span class="value">{{ userInfo.speciality }}</span></div>
-          <div class="info-item"><span class="label">班级：</span><span class="value">{{ userInfo.className }}</span></div>
+          <div class="info-item"><span class="label">部门：</span><span class="value">{{ userInfo.dept.name }}</span></div>
+          <div class="info-item"><span class="label">学院：</span><span class="value">{{ userInfo.userInfo.faculty }}</span></div>
+          <div class="info-item"><span class="label">专业：</span><span class="value">{{ userInfo.userInfo.speciality }}</span></div>
+          <div class="info-item"><span class="label">班级：</span><span class="value">{{ userInfo.userInfo.className }}</span></div>
         </div>
       </div>
     </div>
@@ -41,16 +41,24 @@ const userInfo = ref<UserInfo>({
   userId: -1,
   studentId: '',
   email: '',
-  nickname: '',
-  avatar: '',
-  grade: '',
-  speciality: '',
-  faculty: '',
-  userInfoName: '',
-  sex: 1,
-  className: '',
-  roleName: '',
-  deptName: '',
+  userInfo: {
+    nickname: '',
+    avatar: '',
+    grade: '',
+    speciality: '',
+    faculty: '',
+    name: '',
+    sex: 1,
+    className: '',
+  },
+  roleKeys: [],
+  roles: [],
+  dept: {
+    deptId: -1,
+    name: '',
+  },
+  permissions: [],
+  isAdmin:false,
 })
 
 onMounted(async () => {
@@ -59,6 +67,7 @@ onMounted(async () => {
     userInfo.value = savedUserInfo
   } else {
     const res = await getUserInfo()
+    console.log("用户信息",res)
     if (res) {
       userInfo.value = res.data
       storage.set('userInfo', userInfo.value)

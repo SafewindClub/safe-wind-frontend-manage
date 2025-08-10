@@ -53,22 +53,25 @@
         <!-- 操作列自定义渲染：编辑、删除按钮 -->
         <tiny-grid-column title="操作">
           <template #default="scope">
-            <tiny-button type="primary" size="small" round @click="editRole(scope.row)">
-              编辑
-            </tiny-button>
-            <tiny-button type="danger" size="small" round @click="deleteRole(scope.row)">
-              删除
-            </tiny-button>
-            <tiny-dropdown title="更多" size="small" round>
+            <!-- 检查是否为管理员角色，如果是则不显示编辑和删除按钮 -->
+            <template v-if="!isAdminRole(scope.row)">
+              <tiny-button type="primary" size="small" round @click="editRole(scope.row)">
+                编辑
+              </tiny-button>
+              <tiny-button type="danger" size="small" round @click="deleteRole(scope.row)">
+                删除
+              </tiny-button>
+              <tiny-dropdown title="更多" size="small" round>
               <template #dropdown>
                 <tiny-dropdown-menu>
-                  <tiny-dropdown-item
-                    label="分配用户"
-                    @click="assignUsers(scope.row)"
-                  ></tiny-dropdown-item>
+                  <tiny-dropdown-item label="分配用户" @click="assignUsers(scope.row)"></tiny-dropdown-item>
                 </tiny-dropdown-menu>
               </template>
             </tiny-dropdown>
+            </template>
+            <template v-else>
+              <tiny-tag type="info" size="small">系统角色</tiny-tag>
+            </template>
           </template>
         </tiny-grid-column>
       </tiny-grid>
@@ -159,6 +162,12 @@ import {
 import type { Role, RoleQuery } from "@/types/roletype";
 import { getMenuTreeApi } from "@/api/menu";
 import router from "@/router";
+// 从内存中获取用户信息
+import type { UserInfo } from "@/types/userInfo";
+import { storage } from "@/utils/storage";
+const userInfo = storage.get<UserInfo>("userInfo");
+const isAdmin = userInfo?.isAdmin;
+
 
 // 搜索表单数据，包含分页和筛选条件
 const searchForm = ref<RoleQuery>({
@@ -376,13 +385,27 @@ const addRole = () => {
   nextTick(() => formRef.value && formRef.value.clearValidate());
 };
 
-// 编辑角色弹窗
+// 判断是否为管理员角色
+const isAdminRole = (row: Role) => {
+  // 根据角色标识判断是否为管理员
+  return row.roleKey === 'admin' || row.roleName === '超级管理员';
+};
+
+// 修改编辑角色函数，添加权限检查
 const editRole = (row: Role) => {
+  if (isAdminRole(row)) {
+    TinyNotify({
+      type: "warning",
+      message: "系统角色不允许修改",
+      position: "top-right",
+    });
+    return;
+  }
+  
   dialogTitle.value = "编辑角色";
   formData.value = {
     ...row,
-    menuIds:
-      row.menuIds && row.menuIds.length ? row.menuIds : [...defaultMenuIds],
+    menuIds: row.menuIds && row.menuIds.length ? row.menuIds : [...defaultMenuIds],
   };
   fetchMenuTree();
   dialogVisible.value = true;
@@ -428,8 +451,17 @@ const handleConfirm = () => {
   }
 };
 
-// 删除角色
+// 修改删除角色函数，添加权限检查
 const deleteRole = (row: Role) => {
+  if (isAdminRole(row)) {
+    TinyNotify({
+      type: "warning",
+      message: "系统角色不允许删除",
+      position: "top-right",
+    });
+    return;
+  }
+  
   if (!row.roleId) {
     TinyNotify({
       type: "warning",
@@ -438,6 +470,7 @@ const deleteRole = (row: Role) => {
     });
     return;
   }
+  
   TinyModal.confirm(`确定删除角色 "${row.roleName}" 吗？`).then(
     async (action: string) => {
       if (action === "confirm") {
@@ -511,9 +544,9 @@ const closeDialog = () => {
 // 分配用户功能,跳转到分配用户页面
 const assignUsers = (row: Role) => {
   router.push({
-    name:'DistributionRole',
-    query:{
-      roleId:row.roleId
+    name: 'DistributionRole',
+    query: {
+      roleId: row.roleId
     }
   })
 };
