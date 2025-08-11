@@ -5,6 +5,8 @@ import type {
   RoleApiResponse,
   CommonApiResponse,
 } from '@/types/roletype';
+import type { CommonResponse,PageResult } from '@/types/commonType';
+
 
 // 查询角色列表
 export const queryRoleApi = (params: RoleQuery): Promise<RoleApiResponse> => {
@@ -37,12 +39,12 @@ export const assignSingleUserApi = (data: any): Promise<CommonApiResponse> => {
 };
 
 // 查询未分配用户
-export const queryUnassignedUserApi = (data: any): Promise<CommonApiResponse> => {
+export const queryUnassignedUserApi = (data: any): Promise<CommonResponse<PageResult<any[]>>> => {
   return request.post('/api/role/queryUnDistributionRole', data);
 };
 
 // 查询已分配用户
-export const queryAssignedUserApi = (data:any): Promise<CommonApiResponse> => {
+export const queryAssignedUserApi = (data:any): Promise<CommonResponse<PageResult<any[]>>> => {
   return request.post('/api/role/queryDistributionRole', data);
 };
 

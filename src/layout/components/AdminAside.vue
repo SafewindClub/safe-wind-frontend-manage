@@ -5,38 +5,41 @@
       <span class="title" v-if="!menuStore.isCollapse">社团管理系统</span>
     </div>
     <div class="menu-container">
-      <div
-        v-for="(item, index) in menuData"
-        :key="item.name"
-        class="menu-item"
-        :class="{
-          'is-active': activeIndex === index,
+      <!-- 动态菜单 -->
+      <template v-for="(item, index) in transformedMenus" :key="item.name">
+        <div class="menu-item" :class="{
+          'is-active': activeIndex === Number(index),
           collapse: menuStore.isCollapse,
-        }"
-        @click="handleSelect(item.name)"
-      >
-        <div class="icon-wrap">
-          <component :is="getIcon(item.icon)" class="menu-icon" />
-          <span class="menu-title">{{ item.title }}</span>
+        }" @click="handleSelect(item.name)">
+          <div class="icon-wrap">
+            <svg-icon :icon="item.icon" class="menu-icon" />
+            <span class="menu-title">{{ item.title }}</span>
+          </div>
+          <div class="tooltip" v-if="menuStore.isCollapse">{{ item.title }}</div>
         </div>
-        <div class="tooltip" v-if="menuStore.isCollapse">{{ item.title }}</div>
-      </div>
+        
+        <!-- 子菜单 -->
+        <div v-if="item.children && item.children.length > 0" class="submenu-container">
+          <div v-for="(child, childIndex) in item.children" :key="child.name" class="submenu-item" :class="{
+            'is-active': activeIndex === Number(`${index}-${childIndex}`),
+            collapse: menuStore.isCollapse,
+          }" @click="handleSelect(child.name)">
+            <div class="icon-wrap">
+              <svg-icon :icon="child.icon" class="menu-icon" />
+              <span class="menu-title">{{ child.title }}</span>
+            </div>
+            <div class="tooltip" v-if="menuStore.isCollapse">{{ child.title }}</div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import logo from "@/assets/images/logo.jpg";
-import {
-  iconUser,
-  iconSetting,
-  iconFile,
-  iconStarO,
-  iconRefresh,
-  iconMail,
-  iconAdd,
-} from "@opentiny/vue-icon";
+import SvgIcon from "@/components/SvgIcon/index.vue";
 import { useMenuStore } from "@/stores/menu";
 import { useRouter } from "vue-router";
 
@@ -44,96 +47,80 @@ const router = useRouter();
 const menuStore = useMenuStore();
 
 const logoUrl = logo;
-const activeIndex = ref(0);
+const activeIndex = ref<number | string>(0);
 
-// 图标映射
-const iconMap = {
-  home: iconFile(),
-  user: iconUser(),
-  setting: iconSetting(),
-  file: iconFile(),
-  star: iconStarO(),
-  refresh: iconRefresh(),
-  mail: iconMail(),
-  add: iconAdd(),
-};
+// 定义转换后的菜单项类型
+interface TransformedMenuItem {
+  title: string;
+  name: string;
+  icon: string;
+  path: string;
+  component: string | null;
+  perms: string;
+  orderNum: number;
+  children: TransformedMenuItem[];
+}
 
-// 获取图标组件
-const getIcon = (iconName: string) => {
-  return iconMap[iconName as keyof typeof iconMap] || iconFile();
-};
-
-// 菜单数据
-const menuData = ref([
-  {
-    title: "首页",
-    name: "Dashboard",
-    icon: "home",
-  },
-  {
-    title: "社员管理",
-    name: "Member",
-    icon: "user",
-  },
-  {
-    title: "优秀社员",
-    name: "MemberSelect",
-    icon: "user",
-  },
-  {
-    title: "换届管理",
-    name: "Succession",
-    icon: "refresh",
-  },
-  {
-    title: "活动管理",
-    name: "Activity",
-    icon: "star",
-  },
-  {
-    title: "新闻管理",
-    name: "News",
-    icon: "mail",
-  },
-  {
-    title: "海风墙",
-    name: "SafeWindWall",
-    icon: "shield",
-  },
-  {
-    title: "申请管理",
-    name: "Apply",
-    icon: "add",
-  },
-  {
-    title: "菜单管理",
-    name: "Menu",
-    icon: "menu",
-  },
-  {
-    title: "角色管理",
-    name: "Role",
-    icon: "relo",
-  },
-]);
+// 转换后的菜单数据
+const transformedMenus = computed((): TransformedMenuItem[] => {
+  console.log('AdminAside computed 触发');
+  console.log('AdminAside 当前菜单数据:', menuStore.dynamicMenus);
+  console.log('AdminAside 当前菜单数据类型:', typeof menuStore.dynamicMenus);
+  console.log('AdminAside 当前菜单数据长度:', menuStore.dynamicMenus?.length);
+  
+  const result = menuStore.transformMenus(menuStore.dynamicMenus);
+  console.log('AdminAside 转换后的菜单:', result);
+  return result;
+});
 
 // 处理菜单选择
 const handleSelect = (name: string) => {
-  const index = menuData.value.findIndex((item) => item.name === name);
-  if (index !== -1) {
-    activeIndex.value = index;
-    const routeName = name.charAt(0).toUpperCase() + name.slice(1);
-    const route = router.getRoutes().find((route) => route.name === routeName);
-    if (route) {
-      router.push({ name: routeName });
-      menuStore.addTab({
-        title: menuData.value[index].title,
-        name: name,
-        withClose: true,
-      });
-    }
+  const routeName = name.charAt(0).toUpperCase() + name.slice(1);
+  const route = router.getRoutes().find((route) => route.name === routeName);
+  if (route) {
+    router.push({ name: routeName });
+    // 查找菜单标题
+    const findMenuTitle = (menus: TransformedMenuItem[], targetName: string): string => {
+      for (const menu of menus) {
+        // 检查主菜单
+        if (menu.name === targetName) {
+          return menu.title;
+        }
+        // 检查子菜单
+        if (menu.children) {
+          for (const child of menu.children) {
+            if (child.name === targetName) {
+              return child.title;
+            }
+          }
+          // 递归查找更深层的子菜单
+          const title = findMenuTitle(menu.children, targetName);
+          if (title) return title;
+        }
+      }
+      return '未命名';
+    };
+    
+    console.log('查找菜单标题，目标名称:', name);
+    console.log('当前菜单数据:', transformedMenus.value);
+    const title = findMenuTitle(transformedMenus.value, name);
+    console.log('找到的标题:', title);
+    
+    menuStore.addTab({
+      title: title,
+      name: name,
+      withClose: true,
+    });
   }
 };
+
+// 组件挂载时获取用户菜单
+onMounted(async () => {
+  console.log('AdminAside 组件挂载，开始获取菜单');
+  await menuStore.generateMenus();
+  console.log('AdminAside 菜单获取完成，当前菜单数据:', menuStore.dynamicMenus);
+  console.log('AdminAside 菜单获取完成，当前菜单数据长度:', menuStore.dynamicMenus.length);
+});
 </script>
 
 <style scoped>
@@ -224,6 +211,8 @@ const handleSelect = (name: string) => {
   font-size: 18px;
   margin-right: 12px;
   transition: color 0.2s;
+  width: 18px;
+  height: 18px;
 }
 
 .menu-item.collapse .menu-icon {
@@ -284,5 +273,48 @@ const handleSelect = (name: string) => {
 
 .menu-container::-webkit-scrollbar-track {
   background: #f1f1f1;
+}
+
+.submenu-container {
+  margin-left: 20px;
+}
+
+.submenu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0 8px 32px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  white-space: nowrap;
+}
+
+.submenu-item.collapse {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.submenu-item.is-active,
+.submenu-item:hover {
+  background: #f0f8ff;
+  color: #1890ff;
+}
+
+.submenu-item.is-active .menu-icon,
+.submenu-item:hover .menu-icon {
+  color: #1890ff;
+}
+
+.submenu-item .menu-icon {
+  font-size: 16px;
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+.submenu-item.collapse .menu-icon {
+  margin-right: 0;
 }
 </style>

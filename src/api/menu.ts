@@ -7,8 +7,8 @@ export interface MenuData {
     parentId: number
     orderNum: number
     path: string
-    component: string
-    query?: string
+    component: string | null  // 修改为可空
+    query?: string | null
     routeName: string
     isFrame: number
     isCache: number
@@ -17,7 +17,15 @@ export interface MenuData {
     status: string
     perms: string
     icon: string
-    menuVOList?: MenuData[]
+    menuVOList?: MenuData[] | null  // 修改为可空
+}
+
+// 路由响应类型
+export interface RouteResponse {
+    code: number
+    message: string
+    data: MenuData[]
+    success: boolean
 }
 
 // 添加菜单

@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-
+import type { CommonResponse } from '@/types/commonType';
 // 登录
 export const login = (data: any) =>
   request.post('/api/user/login', {
@@ -17,3 +17,8 @@ export const logout = () => request.get('/api/user/logout');
 
 // 获取用户信息
 export const getUserInfo = () => request.get('/api/user/getUserInfo');
+
+// 获取用户路由权限
+export const getUserRoutes = (): Promise<CommonResponse<any[]>> => {
+  return request.get('/api/user/getRoutes')
+}

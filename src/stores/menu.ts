@@ -1,5 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { getUserRoutes } from '@/api/user';
+import type { MenuData } from '@/api/menu';
+
+// 定义转换后的菜单项类型
+interface TransformedMenuItem {
+  title: string;
+  name: string;
+  icon: string;
+  path: string;
+  component: string | null;
+  perms: string;
+  orderNum: number;
+  children: TransformedMenuItem[];
+}
 
 export const useMenuStore = defineStore('menu', () => {
   // 左侧宽度，默认210
@@ -22,6 +36,79 @@ export const useMenuStore = defineStore('menu', () => {
       withClose: false,
     },
   ]);
+  
+  // 动态菜单数据
+  const dynamicMenus = ref<MenuData[]>([]);
+  
+  // 获取用户路由权限并生成菜单
+  const generateMenus = async (): Promise<MenuData[]> => {
+    try {
+      const response = await getUserRoutes();
+      console.log('获取到的菜单数据:', response);
+      
+      // 直接使用 response.data，因为响应拦截器已经处理过了
+      if (response && response.success && response.data) {
+        console.log('设置菜单数据:', response.data);
+        dynamicMenus.value = response.data;
+        return response.data;
+      }
+    } catch (error) {
+      console.error('获取用户路由失败:', error);
+      // 如果获取菜单失败，使用默认菜单
+      const defaultMenus: MenuData[] = [
+        {
+          menuId: 1,
+          menuName: "首页",
+          parentId: 0,
+          orderNum: 1,
+          path: "dashboard",
+          component: "dashboard",
+          routeName: "Dashboard",
+          isFrame: 0,
+          isCache: 0,
+          menuType: "C",
+          visible: "0",
+          status: "0",
+          perms: "",
+          icon: "dashboard",
+          menuVOList: []
+        }
+      ];
+      dynamicMenus.value = defaultMenus;
+      return defaultMenus;
+    }
+    return [];
+  };
+
+  // 将后端菜单数据转换为前端菜单格式
+  const transformMenus = (menus: MenuData[]): TransformedMenuItem[] => {
+    console.log('transformMenus 接收到的数据:', menus);
+    console.log('transformMenus 数据类型:', typeof menus);
+    console.log('transformMenus 数据长度:', menus?.length);
+    
+    if (!menus || menus.length === 0) {
+      console.log('菜单数据为空');
+      return [];
+    }
+    
+    const result = menus
+      .filter(menu => menu.visible === '0' && menu.status === '0') // 只显示可见且启用的菜单
+      .map(menu => ({
+        title: menu.menuName,
+        name: menu.routeName,
+        icon: menu.icon,
+        path: menu.path,
+        component: menu.component,
+        perms: menu.perms,
+        orderNum: menu.orderNum,
+        children: menu.menuVOList ? transformMenus(menu.menuVOList) : []
+      }))
+      .sort((a, b) => a.orderNum - b.orderNum);
+      
+    console.log('转换后的菜单数据:', result);
+    return result;
+  };
+
   // 折叠
   const toggleCollapse = () => {
     isCollapse.value = !isCollapse.value;
@@ -54,6 +141,9 @@ export const useMenuStore = defineStore('menu', () => {
     headerHeight,
     activeName,
     tabs,
+    dynamicMenus,
+    generateMenus,
+    transformMenus,
     addTab,
     toggleCollapse,
     toggleFullscreen,

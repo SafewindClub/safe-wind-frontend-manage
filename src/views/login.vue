@@ -112,6 +112,8 @@ const loginForm = reactive({
     uuid: ''
 })
 
+import {useMenuStore} from '@/stores/menu'
+
 // // 加载状态
 // const isLoading = ref(false)
 // const loadingInstance = ref<any>(null)
@@ -195,7 +197,6 @@ onMounted(() => {
 
 // 登录
 const handleLogin = async () => {
-    // showLoading()
     try {
         const valid = await loginFormRef.value.validate()
         if (valid) {
@@ -207,15 +208,15 @@ const handleLogin = async () => {
             }) 
         
             userStore.setToken(res.data.token)
+            
             Modal.message({ message: '登录成功', status: 'success' })
+            // 直接跳转
             router.push('/admin/dashboard')
         }
     } catch (error: any) {
         console.error('登录失败', error)
         refreshCaptcha()
         loginForm.code = ''
-    } finally {
-        // hideLoading()
     }
 }
 </script>
