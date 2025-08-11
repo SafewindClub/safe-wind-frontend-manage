@@ -7,7 +7,7 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/login",
+      redirect: "/admin/dashboard", // 直接重定向到管理后台首页
     },
     {
       path: "/admin",
@@ -19,66 +19,141 @@ const router = createRouter({
           path: "dashboard",
           name: "Dashboard",
           component: () => import("@/views/dashboard.vue"),
+          meta: {
+            title: "首页",
+            icon: "dashboard",
+            perms: "dashboard"
+          }
         },
         {
           path: "member",
           name: "Member",
           component: () => import("@/views/member/index.vue"),
+          meta: {
+            title: "会员管理",
+            icon: "people",
+            perms: "member"
+          }
         },
         {
           path: "member-select",
           name: "MemberSelect",
           component: () => import("@/views/member-select/index.vue"),
+          meta: {
+            title: "会员选择",
+            icon: "people",
+            perms: "member-select"
+          }
         },
         {
           path: "succession",
           name: "Succession",
           component: () => import("@/views/succession/index.vue"),
+          meta: {
+            title: "传承管理",
+            icon: "education",
+            perms: "succession"
+          }
         },
         {
           path: "content",
           name: "Content",
           component: () => import("@/views/content/index.vue"),
+          meta: {
+            title: "内容管理",
+            icon: "documentation",
+            perms: "content"
+          }
         },
         {
           path: "activity",
           name: "Activity",
           component: () => import("@/views/activity/index.vue"),
+          meta: {
+            title: "活动管理",
+            icon: "chart",
+            perms: "activity"
+          }
         },
         {
           path: "news",
           name: "News",
           component: () => import("@/views/news/index.vue"),
+          meta: {
+            title: "新闻管理",
+            icon: "documentation",
+            perms: "news"
+          }
         },
         {
           path: "safe-wind-wall",
           name: "SafeWindWall",
           component: () => import("@/views/safe-wind-wall/index.vue"),
+          meta: {
+            title: "安全风墙",
+            icon: "shield",
+            perms: "safe-wind-wall"
+          }
         },
         {
           path: "apply",
           name: "Apply",
           component: () => import("@/views/apply/index.vue"),
+          meta: {
+            title: "申请管理",
+            icon: "form",
+            perms: "apply"
+          }
+        },
+        {
+          path: "user-manage",
+          name: "UserManage",
+          component: () => import("@/views/user-manage/index.vue"),
+          meta: {
+            title: "用户管理",
+            icon: "user",
+            perms: "user"
+          }
         },
         {
           path: "user",
           name: "User",
           component: () => import("@/views/user/index.vue"),
+          meta: {
+            title: "用户中心",
+            icon: "user",
+            perms: "user"
+          }
         },
         {
           path: "menu",
           name: "Menu",
           component: () => import("@/views/menu/index.vue"),
+          meta: {
+            title: "菜单管理",
+            icon: "menu",
+            perms: "menu"
+          }
         },
         {
           path: "role",
           name: "Role",
           component: () => import("@/views/role/index.vue"),
+          meta: {
+            title: "角色管理",
+            icon: "peoples",
+            perms: "role"
+          }
         },
         {
           path: "distributionRole",
           name: "DistributionRole",
           component: () => import("@/views/role/DistributionRole.vue"),
+          meta: {
+            title: "分配角色",
+            icon: "peoples",
+            perms: "distributionRole"
+          }
         },
       ],
     },
@@ -95,7 +170,7 @@ const router = createRouter({
   ],
 });
 
-// 动态添加路由
+// 简化的动态路由添加（可选）
 const addDynamicRoutes = (menus: any[]) => {
   console.log('开始添加动态路由:', menus);
   
@@ -105,6 +180,7 @@ const addDynamicRoutes = (menus: any[]) => {
   }
   
   const addRoute = (menu: any) => {
+    // 只处理组件类型的菜单
     if (menu.component && menu.menuType === 'C') {
       const route = {
         path: menu.path,
@@ -117,15 +193,15 @@ const addDynamicRoutes = (menus: any[]) => {
         }
       };
       
-      console.log('添加路由:', route);
+      console.log('添加动态路由:', route);
       
       // 检查路由是否已存在
       const existingRoute = router.getRoutes().find(r => r.name === route.name);
       if (!existingRoute) {
         router.addRoute('Admin', route);
-        console.log('路由添加成功:', route.name);
+        console.log('动态路由添加成功:', route.name);
       } else {
-        console.log('路由已存在:', route.name);
+        console.log('动态路由已存在:', route.name);
       }
     }
     
@@ -138,7 +214,7 @@ const addDynamicRoutes = (menus: any[]) => {
   menus.forEach(addRoute);
 };
 
-// 添加全局前置守卫
+// 简化的路由守卫
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
   const menuStore = useMenuStore();
@@ -155,28 +231,19 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  // 如果还没有加载用户菜单，先加载
+  // 如果还没有加载用户菜单，先加载（可选）
   if (menuStore.dynamicMenus.length === 0) {
     try {
-      console.log('路由守卫：开始加载菜单');
       const menus = await menuStore.generateMenus();
-      console.log('路由守卫：菜单加载完成，菜单数据:', menus);
-      console.log('路由守卫：菜单数据长度:', menus?.length);
       
       if (menus && menus.length > 0) {
-        console.log('路由守卫：开始添加路由');
         addDynamicRoutes(menus);
-        console.log('路由守卫：路由添加完成');
+        console.log('路由守卫：动态路由添加完成');
       } else {
-        console.log('路由守卫：没有菜单数据，跳过路由添加');
+        console.log('路由守卫：没有动态菜单数据');
       }
-      
-      next();
-      return;
     } catch (error) {
       console.error('路由守卫：加载用户菜单失败:', error);
-      next();
-      return;
     }
   }
 

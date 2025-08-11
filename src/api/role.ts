@@ -52,3 +52,22 @@ export const queryAssignedUserApi = (data:any): Promise<CommonResponse<PageResul
 export const batchCancelAssignUserApi = (data: any): Promise<CommonApiResponse> => {
   return request.post('/api/role/batchCancelAuthorizeUser', data);
 };
+
+// 查询角色已分配的菜单权限
+export const queryRoleMenusApi = (roleId: number): Promise<CommonResponse<any[]>> => {
+  return request.post('/api/role/queryRoleMenus', { roleId });
+};
+
+// 分配菜单权限给角色
+export const assignRoleMenusApi = (data: { roleId: number; menuIds: number[] }): Promise<CommonApiResponse> => {
+  return request.post('/api/role/assignMenusToRole', {
+    roleId: data.roleId,
+    menuIds: data.menuIds
+  });
+};
+
+// 查询所有菜单（包含角色分配状态）
+export const queryAllMenusWithRoleStatus = (roleId: number): Promise<CommonResponse<any[]>> => {
+  return request.post('/api/role/queryAllMenusWithRoleStatus', { roleId });
+};
+

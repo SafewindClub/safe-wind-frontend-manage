@@ -40,6 +40,25 @@ export const useMenuStore = defineStore('menu', () => {
   // 动态菜单数据
   const dynamicMenus = ref<MenuData[]>([]);
   
+  // 默认首页菜单
+  const defaultDashboardMenu: MenuData = {
+    menuId: 1,
+    menuName: "首页",
+    parentId: 0,
+    orderNum: 1,
+    path: "dashboard",
+    component: "dashboard",
+    routeName: "Dashboard",
+    isFrame: 0,
+    isCache: 0,
+    menuType: "M",
+    visible: "0",
+    status: "0",
+    perms: "dashboard",
+    icon: "dashboard",
+    menuVOList: []
+  };
+  
   // 获取用户路由权限并生成菜单
   const generateMenus = async (): Promise<MenuData[]> => {
     try {
@@ -49,35 +68,66 @@ export const useMenuStore = defineStore('menu', () => {
       // 直接使用 response.data，因为响应拦截器已经处理过了
       if (response && response.success && response.data) {
         console.log('设置菜单数据:', response.data);
-        dynamicMenus.value = response.data;
-        return response.data;
+        
+        // 检查是否包含首页菜单，如果没有则添加
+        const hasDashboard = response.data.some((menu: MenuData) => 
+          menu.routeName === 'Dashboard' || menu.path === 'dashboard'
+        );
+        
+        if (!hasDashboard) {
+          // 将首页菜单添加到最前面
+          dynamicMenus.value = [defaultDashboardMenu, ...response.data];
+        } else {
+          dynamicMenus.value = response.data;
+        }
+        
+        return dynamicMenus.value;
       }
     } catch (error) {
       console.error('获取用户路由失败:', error);
-      // 如果获取菜单失败，使用默认菜单
-      const defaultMenus: MenuData[] = [
-        {
-          menuId: 1,
-          menuName: "首页",
-          parentId: 0,
-          orderNum: 1,
-          path: "dashboard",
-          component: "dashboard",
-          routeName: "Dashboard",
-          isFrame: 0,
-          isCache: 0,
-          menuType: "C",
-          visible: "0",
-          status: "0",
-          perms: "",
-          icon: "dashboard",
-          menuVOList: []
-        }
-      ];
-      dynamicMenus.value = defaultMenus;
-      return defaultMenus;
     }
-    return [];
+    
+    // 如果获取菜单失败或没有数据，使用默认菜单（包含首页）
+    const defaultMenus: MenuData[] = [
+      defaultDashboardMenu,
+      {
+        menuId: 2,
+        menuName: "用户管理",
+        parentId: 0,
+        orderNum: 2,
+        path: "user",
+        component: "user/index",
+        routeName: "User",
+        isFrame: 0,
+        isCache: 0,
+        menuType: "C",
+        visible: "0",
+        status: "0",
+        perms: "user",
+        icon: "user",
+        menuVOList: []
+      },
+      {
+        menuId: 3,
+        menuName: "角色管理",
+        parentId: 0,
+        orderNum: 3,
+        path: "role",
+        component: "role/index",
+        routeName: "Role",
+        isFrame: 0,
+        isCache: 0,
+        menuType: "C",
+        visible: "0",
+        status: "0",
+        perms: "role",
+        icon: "peoples",
+        menuVOList: []
+      }
+    ];
+    
+    dynamicMenus.value = defaultMenus;
+    return defaultMenus;
   };
 
   // 将后端菜单数据转换为前端菜单格式
@@ -87,8 +137,17 @@ export const useMenuStore = defineStore('menu', () => {
     console.log('transformMenus 数据长度:', menus?.length);
     
     if (!menus || menus.length === 0) {
-      console.log('菜单数据为空');
-      return [];
+      console.log('菜单数据为空，返回默认首页菜单');
+      return [{
+        title: "首页",
+        name: "Dashboard",
+        icon: "dashboard",
+        path: "dashboard",
+        component: "dashboard",
+        perms: "dashboard",
+        orderNum: 1,
+        children: []
+      }];
     }
     
     const result = menus
@@ -114,10 +173,12 @@ export const useMenuStore = defineStore('menu', () => {
     isCollapse.value = !isCollapse.value;
     asideWidth.value = isCollapse.value ? 64 : 210;
   };
+  
   //全屏
   const toggleFullscreen = () => {
     isFullscreen.value = !isFullscreen.value;
   };
+  
   // 添加标签导航栏
   const addTab = (info: any) => {
     const { name, title, withClose } = info;

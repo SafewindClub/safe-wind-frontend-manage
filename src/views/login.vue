@@ -95,6 +95,7 @@ import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { login } from '@/api/user'
 import { getCaptcha } from '@/api/common'
+import { showMessage } from '@/utils/messageUtils' // 导入统一消息处理工具
 const UserIcon = IconUser()
 const LockIcon = IconLock()
 const KeyIcon = IconUnlock()
@@ -209,7 +210,7 @@ const handleLogin = async () => {
         
             userStore.setToken(res.data.token)
             
-            Modal.message({ message: '登录成功', status: 'success' })
+            showMessage.success('登录成功')
             // 直接跳转
             router.push('/admin/dashboard')
         }

@@ -229,6 +229,7 @@ import {
 } from '@opentiny/vue'
 import SvgIcon from '@/components/SvgIcon/index.vue'
 import icons from '@/components/SelectIcon/icons' // 所有图标
+import { showMessage } from '@/utils/messageUtils' // 消息通知工具
 
 // -----------------------变量------------------------------
 const searchForm = ref({
@@ -421,27 +422,15 @@ const handleConfirm = () => {
                 }
                 console.log("新增/编辑菜单结果", res)
                 if (res) {
-                    TinyNotify({
-                        type: 'success',
-                        message: '成功',
-                        position: 'top-right'
-                    })
+                    showMessage.success('成功')
                     getMenuList() // 刷新菜单列表
                     dialogVisible.value = false // 关闭弹窗
                 } else {
-                    TinyNotify({
-                        type: 'error',
-                        message: '失败',
-                        position: 'top-right'
-                    })
+                    showMessage.error('失败')
                 }
             } catch (error) {
                 console.error("菜单操作请求失败:", error)
-                TinyNotify({
-                    type: 'error',
-                    message: '请求失败，请检查网络或服务器',
-                    position: 'top-right'
-                })
+                showMessage.error('请求失败，请检查网络或服务器')
             }
         } else {
             console.log('表单验证失败')
@@ -453,11 +442,7 @@ const handleConfirm = () => {
 // 删除菜单
 const deleteMenu = (menuData: MenuData) => {
     if (!menuData || !menuData.menuId) {
-        TinyNotify({
-            type: 'warning',
-            message: '请选择要删除的菜单',
-            position: 'top-right'
-        })
+        showMessage.warning('请选择要删除的菜单')
         return
     }
 
@@ -466,26 +451,14 @@ const deleteMenu = (menuData: MenuData) => {
             try {
                 const res = await deleteMenuApi(menuData.menuId as number) // 假设 deleteMenuApi 接收 menuId
                 if (res) {
-                    TinyNotify({
-                        type: 'success',
-                        message: '删除成功',
-                        position: 'top-right'
-                    })
+                    showMessage.success('删除成功')
                     getMenuList() // 刷新菜单列表
                 } else {
-                    TinyNotify({
-                        type: 'error',
-                        message: '删除失败',
-                        position: 'top-right'
-                    })
+                    showMessage.error('删除失败')
                 }
             } catch (error) {
                 console.error("删除菜单请求失败:", error)
-                TinyNotify({
-                    type: 'error',
-                    message: '请求失败，请检查网络或服务器',
-                    position: 'top-right'
-                })
+                showMessage.error('请求失败，请检查网络或服务器')
             }
         }
     }).catch((error: any) => {

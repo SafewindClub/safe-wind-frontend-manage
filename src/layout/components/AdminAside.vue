@@ -32,6 +32,18 @@
           </div>
         </div>
       </template>
+      
+      <!-- 如果没有菜单数据，显示默认首页 -->
+      <div v-if="transformedMenus.length === 0" class="menu-item" :class="{
+        'is-active': activeIndex === 0,
+        collapse: menuStore.isCollapse,
+      }" @click="handleSelect('dashboard')">
+        <div class="icon-wrap">
+          <svg-icon icon="dashboard" class="menu-icon" />
+          <span class="menu-title">首页</span>
+        </div>
+        <div class="tooltip" v-if="menuStore.isCollapse">首页</div>
+      </div>
     </div>
   </div>
 </template>
@@ -81,33 +93,39 @@ const handleSelect = (name: string) => {
     router.push({ name: routeName });
     // 查找菜单标题
     const findMenuTitle = (menus: TransformedMenuItem[], targetName: string): string => {
+      console.log('开始查找菜单标题，目标名称:', targetName, '路由名称:', routeName);
+      
       for (const menu of menus) {
-        // 检查主菜单
-        if (menu.name === targetName) {
+        console.log('检查主菜单:', menu.name, '标题:', menu.title);
+        // 检查主菜单 - 同时检查原始名称和转换后的路由名称
+        if (menu.name === targetName || menu.name === routeName || menu.name.toLowerCase() === targetName.toLowerCase()) {
+          console.log('找到主菜单匹配:', menu.title);
           return menu.title;
         }
         // 检查子菜单
-        if (menu.children) {
+        if (menu.children && menu.children.length > 0) {
+          console.log('检查子菜单，子菜单数量:', menu.children.length);
           for (const child of menu.children) {
-            if (child.name === targetName) {
+            console.log('检查子菜单:', child.name, '标题:', child.title);
+            if (child.name === targetName || child.name === routeName || child.name.toLowerCase() === targetName.toLowerCase()) {
+              console.log('找到子菜单匹配:', child.title);
               return child.title;
             }
           }
-          // 递归查找更深层的子菜单
-          const title = findMenuTitle(menu.children, targetName);
-          if (title) return title;
         }
       }
+      console.log('未找到匹配的菜单');
       return '未命名';
     };
     
     console.log('查找菜单标题，目标名称:', name);
-    console.log('当前菜单数据:', transformedMenus.value);
+    console.log('路由名称:', routeName);
+    console.log('当前菜单数据:', JSON.stringify(transformedMenus.value, null, 2));
     const title = findMenuTitle(transformedMenus.value, name);
     console.log('找到的标题:', title);
     
     menuStore.addTab({
-      title: title,
+      title: title || '首页',
       name: name,
       withClose: true,
     });

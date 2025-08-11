@@ -49,6 +49,10 @@
           </template>
         </tiny-grid-column>
         <tiny-grid-column field="createTime" title="创建时间" slot="createTime">
+          <template #default="scope">
+            <!-- 格式化时间 -->
+            <span>{{ formatDate(scope.row.createTime) }}</span>
+          </template>
         </tiny-grid-column>
         <!-- 操作列自定义渲染：编辑、删除按钮 -->
         <tiny-grid-column title="操作">
@@ -100,15 +104,21 @@
           </tiny-base-select>
         </tiny-form-item>
         <!-- 菜单权限选择 -->
-        <tiny-form-item label="菜单权限" prop="menuIds" required>
-          <tiny-tree :data="menuTree" show-checkbox node-key="menuId" :default-checked-keys="formData.menuIds"
-            @check="handleMenuCheck" style="
+        <tiny-form-item label="菜单权限" prop="menuIds">
+          <tiny-tree 
+            :data="menuTree" 
+            show-checkbox 
+            node-key="menuId" 
+            :default-checked-keys="formData.menuIds || []"
+            @check="handleMenuCheck" 
+            style="
               max-height: 300px;
               overflow: auto;
               border: 1px solid #b3d8ff;
               border-radius: 8px;
               padding: 8px;
-            " />
+            " 
+          />
         </tiny-form-item>
         <tiny-form-item label="状态" prop="status">
           <tiny-base-select v-model="formData.status" placeholder="请选择状态">
@@ -141,7 +151,6 @@ import {
   TinyOption,
   TinyBaseSelect,
   TinyDialogBox,
-  TinyNotify,
   TinyModal,
   TinyTag,
   TinyGridColumn,
@@ -151,12 +160,17 @@ import {
   TinyDropdownMenu,
   TinyDropdownItem,
 } from "@opentiny/vue";
+// 引入统一消息处理
+import { showMessage } from "@/utils/messageUtils";
 // 引入角色相关API
 import {
   queryRoleApi,
   addRoleApi,
   updateRoleApi,
   deleteRoleApi,
+  queryRoleMenusApi,
+  assignRoleMenusApi,
+  queryAllMenusWithRoleStatus,
 } from "@/api/role";
 // 引入类型定义
 import type { Role, RoleQuery } from "@/types/roletype";
@@ -251,7 +265,6 @@ const rules = reactive({
   ],
   dataScope: [{ required: true, message: "请选择数据范围", trigger: "change" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
-  menuIds: [{ required: true, message: "请选择菜单权限", trigger: "change" }],
 });
 
 // 时间格式化函数
@@ -292,18 +305,10 @@ const getRoleList = async () => {
         await getRoleList();
       }
     } else {
-      TinyNotify({
-        type: "error",
-        message: res.message,
-        position: "top-right",
-      });
+      showMessage.error(res.message);
     }
   } catch (error: any) {
-    TinyNotify({
-      type: "error",
-      message: error?.message || "请求失败",
-      position: "top-right",
-    });
+    showMessage.error(error?.message || "请求失败");
   }
 };
 
@@ -335,34 +340,21 @@ const handleApi = async (
   try {
     const res = await apiFunc(params);
     if (res.success) {
-      TinyNotify({
-        type: "success",
-        message: successMsg,
-        position: "top-right",
-      });
+      showMessage.success(successMsg);
       dialogVisible.value = false;
       nextTick(() => formRef.value && formRef.value.clearValidate());
       return true;
     } else {
-      TinyNotify({
-        type: "error",
-        message: res.message,
-        position: "top-right",
-      });
+      showMessage.error(res.message);
       return false;
     }
   } catch (error: any) {
-    TinyNotify({
-      type: "error",
-      message: error?.message || "请求失败",
-      position: "top-right",
-    });
+    showMessage.error(error?.message || "请求失败");
     return false;
   }
 };
 
 // 新增角色弹窗
-const defaultMenuIds = [1, 28, 29, 30, 31];
 const addRole = () => {
   dialogTitle.value = "新增角色";
   formData.value = {
@@ -378,7 +370,7 @@ const addRole = () => {
     updateBy: "",
     updateTime: new Date().toISOString(),
     remark: "",
-    menuIds: [...defaultMenuIds],
+    menuIds: [],
   };
   fetchMenuTree();
   dialogVisible.value = true;
@@ -392,22 +384,35 @@ const isAdminRole = (row: Role) => {
 };
 
 // 修改编辑角色函数，添加权限检查
-const editRole = (row: Role) => {
+const editRole = async (row: Role) => {
   if (isAdminRole(row)) {
-    TinyNotify({
-      type: "warning",
-      message: "系统角色不允许修改",
-      position: "top-right",
-    });
+    showMessage.warning("系统角色不允许修改");
     return;
   }
   
   dialogTitle.value = "编辑角色";
   formData.value = {
     ...row,
-    menuIds: row.menuIds && row.menuIds.length ? row.menuIds : [...defaultMenuIds],
+    menuIds: [],
   };
-  fetchMenuTree();
+  
+  // 获取菜单树
+  await fetchMenuTree();
+  
+  // 获取当前角色已分配的菜单权限
+  if (row.roleId) {
+    try {
+      const menuRes = await queryRoleMenusApi(row.roleId);
+      if (menuRes.success && menuRes.data) {
+        // 提取菜单ID列表
+        const menuIds = menuRes.data.map((menu: any) => menu.menuId);
+        formData.value.menuIds = menuIds;
+      }
+    } catch (error: any) {
+      showMessage.warning("获取角色菜单权限失败");
+    }
+  }
+  
   dialogVisible.value = true;
   nextTick(() => formRef.value && formRef.value.clearValidate());
 };
@@ -417,9 +422,30 @@ const handleAddRole = async () => {
   if (!formRef.value) return;
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
-      const success = await handleApi(addRoleApi, formData.value, "新增成功");
-      if (success) {
-        getRoleList();
+      try {
+        // 创建角色（包含菜单权限）
+        console.log('提交的角色数据:', formData.value);
+        
+        // 确保menuIds是数组
+        const submitData = {
+          ...formData.value,
+          menuIds: Array.isArray(formData.value.menuIds) ? formData.value.menuIds : []
+        };
+        
+        console.log('处理后的提交数据:', submitData);
+        
+        const roleRes = await addRoleApi(submitData);
+        if (roleRes.success) {
+          showMessage.success("新增成功");
+          dialogVisible.value = false;
+          nextTick(() => formRef.value && formRef.value.clearValidate());
+          getRoleList();
+        } else {
+          showMessage.error(roleRes.message || "新增失败");
+        }
+      } catch (error: any) {
+        console.error('新增角色错误:', error);
+        showMessage.error(error?.message || "请求失败");
       }
     }
   });
@@ -430,13 +456,41 @@ const handleEditRole = async () => {
   if (!formRef.value) return;
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
-      const success = await handleApi(
-        updateRoleApi,
-        formData.value,
-        "编辑成功"
-      );
-      if (success) {
-        await getRoleList();
+      try {
+        // 先更新角色基本信息（不包含菜单权限）
+        const roleData = { ...formData.value };
+        const menuIds = Array.isArray(roleData.menuIds) ? roleData.menuIds : []; // 保存菜单权限
+        roleData.menuIds = []; // 清空菜单权限，先更新角色
+        
+        console.log('提交的角色数据:', roleData);
+        console.log('菜单权限数据:', menuIds);
+        
+        const roleRes = await updateRoleApi(roleData);
+        if (roleRes.success) {
+          // 更新菜单权限
+          try {
+            const menuRes = await assignRoleMenusApi({
+              roleId: formData.value.roleId!,
+              menuIds: menuIds
+            });
+            
+            if (!menuRes.success) {
+              showMessage.warning("角色信息更新成功，但菜单权限更新失败");
+            } else {
+              showMessage.success("编辑成功");
+            }
+          } catch (error) {
+            showMessage.warning("角色信息更新成功，但菜单权限更新失败");
+          }
+          
+          dialogVisible.value = false;
+          nextTick(() => formRef.value && formRef.value.clearValidate());
+          await getRoleList();
+        } else {
+          showMessage.error(roleRes.message || "编辑失败");
+        }
+      } catch (error: any) {
+        showMessage.error(error?.message || "请求失败");
       }
     }
   });
@@ -454,20 +508,12 @@ const handleConfirm = () => {
 // 修改删除角色函数，添加权限检查
 const deleteRole = (row: Role) => {
   if (isAdminRole(row)) {
-    TinyNotify({
-      type: "warning",
-      message: "系统角色不允许删除",
-      position: "top-right",
-    });
+    showMessage.warning("系统角色不允许删除");
     return;
   }
   
   if (!row.roleId) {
-    TinyNotify({
-      type: "warning",
-      message: "请选择要删除的角色",
-      position: "top-right",
-    });
+    showMessage.warning("请选择要删除的角色");
     return;
   }
   
@@ -495,33 +541,96 @@ const resetForm = () => {
 
 const menuTree = ref<any[]>([]);
 
-// 获取菜单树（静态数据）
+// 获取菜单树（从接口获取真实数据）
 const fetchMenuTree = async () => {
-  menuTree.value = [
-    {
-      menuId: 1,
-      label: "首页",
-      children: [
-        { menuId: 28, label: "仪表盘" },
-        { menuId: 29, label: "统计分析" },
-        { menuId: 30, label: "报表管理" },
-        { menuId: 31, label: "系统监控" },
-      ],
-    },
-    {
-      menuId: 2,
-      label: "用户管理",
-      children: [
-        { menuId: 32, label: "用户列表" },
-        { menuId: 33, label: "角色管理" },
-      ],
-    },
-  ];
+  try {
+    const res = await getMenuTreeApi({});
+    console.log('菜单接口返回数据:', res);
+    
+    if (res && res.data && Array.isArray(res.data)) {
+      // 转换菜单数据为树形结构
+      menuTree.value = convertMenuDataToTree(res.data);
+      console.log('转换后的菜单树:', menuTree.value);
+    } else {
+      console.warn('菜单数据格式不正确:', res);
+      // 使用备用数据
+      menuTree.value = [
+        {
+          menuId: 1,
+          label: "系统管理",
+          children: [
+            { menuId: 2, label: "用户管理" },
+            { menuId: 3, label: "角色管理" },
+            { menuId: 4, label: "菜单管理" },
+          ],
+        },
+        {
+          menuId: 5,
+          label: "内容管理",
+          children: [
+            { menuId: 6, label: "新闻管理" },
+            { menuId: 7, label: "活动管理" },
+          ],
+        },
+      ];
+      showMessage.warning("使用备用菜单数据");
+    }
+  } catch (error: any) {
+    console.error('获取菜单数据错误:', error);
+    // 使用备用数据
+    menuTree.value = [
+      {
+        menuId: 1,
+        label: "系统管理",
+        children: [
+          { menuId: 2, label: "用户管理" },
+          { menuId: 3, label: "角色管理" },
+          { menuId: 4, label: "菜单管理" },
+        ],
+      },
+      {
+        menuId: 5,
+        label: "内容管理",
+        children: [
+          { menuId: 6, label: "新闻管理" },
+          { menuId: 7, label: "活动管理" },
+        ],
+      },
+    ];
+    showMessage.warning("使用备用菜单数据");
+  }
+};
+
+// 转换菜单数据为树形结构
+const convertMenuDataToTree = (menuData: any[]): any[] => {
+  if (!Array.isArray(menuData)) return [];
+  
+  return menuData.map((item: any) => ({
+    menuId: item.menuId || item.id,
+    label: item.menuName || item.label || item.name,
+    children: item.menuVOList ? convertMenuDataToTree(item.menuVOList) : []
+  }));
 };
 
 // 处理菜单选择
 const handleMenuCheck = (checkedKeys: any, checkedNodes: any) => {
-  formData.value.menuIds = checkedKeys;
+  console.log('选中的菜单ID:', checkedKeys);
+  console.log('选中的菜单节点:', checkedNodes);
+  
+  let menuIds: number[] = [];
+  
+  // 根据OpenTiny树组件的文档，checkedKeys应该是数组
+  if (checkedNodes && checkedNodes.checkedKeys && Array.isArray(checkedNodes.checkedKeys)) {
+    menuIds = checkedNodes.checkedKeys.map((id: any) => Number(id));
+  } else if (Array.isArray(checkedKeys)) {
+    menuIds = checkedKeys.map((id: any) => Number(id));
+  }
+  
+  // 过滤掉NaN值
+  menuIds = menuIds.filter(id => !isNaN(id));
+  
+  formData.value.menuIds = menuIds;
+  console.log('设置后的菜单IDs:', formData.value.menuIds);
 };
 
 // 在 <script setup> 里添加 handleDeleteInDialog 方法
@@ -553,11 +662,7 @@ const assignUsers = (row: Role) => {
 
 // 数据权限功能
 const dataPermissions = (row: Role) => {
-  TinyNotify({
-    type: "info",
-    message: `为角色 "${row.roleName}" 设置数据权限功能开发中...`,
-    position: "top-right",
-  });
+  showMessage.info(`为角色 "${row.roleName}" 设置数据权限功能开发中...`);
 };
 </script>
 
